@@ -1,18 +1,22 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
-from dotenv import load_dotenv
-import os
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from app.core.config import settings
 
-load_dotenv()
+# engine = the actual connection pool to PostgreSQL
+engine = create_engine(settings.DATABASE_URL)
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+# SessionLocal is a factory — calling SessionLocal() gives a new, isolated DB session
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-engine = create_engine(DATABASE_URL)
+# Base is the parent class every model inherits from.
+# SQLAlchemy uses Base.metadata to know what tables exist — Alembic reads this too.
+class Base(DeclarativeBase):
+    pass
 
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine
-)
-
-Base = declarative_base()
+# FastAPI dependency: yields a session, guarantees it closes even if the request errors
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
