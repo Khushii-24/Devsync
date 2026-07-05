@@ -1,6 +1,8 @@
 [project]
 name = "devsync-backend"
 version = "0.1.0"
+package-mode = false
+
 description = "DevSync API"
 authors = [
     {name = "Khushi"}
