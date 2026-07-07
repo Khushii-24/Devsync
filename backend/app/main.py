@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api import auth, users
+from app.api import projects, columns
+from app.api import tasks
+from app.api import workspaces
 
 app = FastAPI(
     title="DevSync API",
@@ -21,3 +24,7 @@ def root():
 
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
+app.include_router(projects.router, prefix="/api/v1")
+app.include_router(columns.router, prefix="/api/v1")
+app.include_router(tasks.router, prefix="/api/v1")
+app.include_router(workspaces.router, prefix="/api/v1")

@@ -14,5 +14,19 @@ class Project(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     workspace = relationship("Workspace", back_populates="projects")
-    columns = relationship("Column", back_populates="project", order_by="Column.position")
-    documents = relationship("Document", back_populates="project")
+    columns = relationship(
+        "Column",
+        back_populates="project",
+        order_by="Column.position",
+        cascade="all, delete-orphan",
+    )
+    documents = relationship(
+        "Document",
+        back_populates="project",
+        cascade="all, delete-orphan",
+    )
+    tasks = relationship(
+    "Task",
+    back_populates="project",
+    cascade="all, delete-orphan",
+    )

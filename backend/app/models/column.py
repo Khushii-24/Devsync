@@ -15,4 +15,9 @@ class Column(Base):
     position = SAColumn(Integer, nullable=False)    # controls left-to-right order on the board
 
     project = relationship("Project", back_populates="columns")
-    tasks = relationship("Task", back_populates="column", order_by="Task.position")
+    tasks = relationship(
+        "Task",
+        back_populates="column",
+        order_by="Task.position",
+        cascade="all, delete-orphan",
+    )

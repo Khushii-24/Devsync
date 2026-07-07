@@ -3,7 +3,7 @@ import { useAuthStore } from "./stores/auth.store";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-
+import BoardPage from "./pages/BoardPage";
 function ProtectedRoute({ children }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   return isAuthenticated ? children : <Navigate to="/login" replace />;
@@ -22,6 +22,7 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/projects/:projectId/board" element={<ProtectedRoute><BoardPage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
