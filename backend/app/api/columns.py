@@ -1,13 +1,18 @@
+from venv import logger
+
+from app.schemas import project
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from uuid import UUID
-
+import logging
 from app.db.database import get_db
 from app.core.dependencies import get_current_user
 from app.models import Column, User
 from app.schemas.column import ColumnCreate, ColumnUpdate, ColumnResponse
 from app.api.deps import require_workspace_member, get_project_or_404
+from app.core.websocket_manager import manager
+from app.core.events import build_event
 
 router = APIRouter(tags=["columns"])
 
@@ -20,7 +25,7 @@ def get_column_or_404(column_id: UUID, db: Session) -> Column:
 
 
 @router.post("/projects/{project_id}/columns", response_model=ColumnResponse, status_code=status.HTTP_201_CREATED)
-def create_column(
+async def create_column(
     project_id: UUID,
     payload: ColumnCreate,
     db: Session = Depends(get_db),
@@ -42,6 +47,18 @@ def create_column(
     db.add(column)
     db.commit()
     db.refresh(column)
+    event = build_event(
+        "column.created",
+        str(project.id),
+        ColumnResponse.model_validate(column).model_dump(mode="json"),
+        current_user.id,
+    )
+
+    try:
+        await manager.publish(str(project.id), event)
+    except Exception:
+        logger.exception("Failed to publish column.created event")
+
     return column
 
 
@@ -58,7 +75,7 @@ def list_columns(
 
 
 @router.patch("/columns/{column_id}", response_model=ColumnResponse)
-def update_column(
+async def update_column(
     column_id: UUID,
     payload: ColumnUpdate,
     db: Session = Depends(get_db),
@@ -74,6 +91,17 @@ def update_column(
 
     db.commit()
     db.refresh(column)
+    event = build_event(
+    "column.updated",
+    str(column.project_id),
+    ColumnResponse.model_validate(column).model_dump(mode="json"),
+    current_user.id,
+)
+
+    try:
+        await manager.publish(str(column.project_id), event)
+    except Exception:
+        logger.exception("Failed to publish column.updated event")
     return column
 
 

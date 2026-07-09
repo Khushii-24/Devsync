@@ -1,0 +1,26 @@
+services:
+  # ... your existing postgres service stays as-is above this ...
+
+  redis:
+    image: redis:7-alpine        # official image, alpine = smaller base OS, faster pulls
+    ports:
+      - "6379:6379"               # host:container — 6379 is Redis's default port,
+                                   # exposed so you can optionally connect from
+                                   # outside Docker too (e.g. a GUI tool) while debugging
+    volumes:
+      - redis_data:/data          # persists Redis's on-disk snapshot across container
+                                   # restarts — not critical for pub/sub itself (which
+                                   # is memory-only anyway) but Redis periodically
+                                   # snapshots to disk regardless, so this avoids
+                                   # losing that snapshot file every restart
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]   # docker's way of knowing "is Redis actually
+                                             # ready to accept connections yet", not just
+                                             # "has the container started" — matters if
+                                             # your backend container depends_on redis
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  redis_data:      # ...alongside whatever volume declarations postgres already has
