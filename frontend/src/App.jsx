@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import BoardPage from "./pages/BoardPage";
+import DocumentPage from "./pages/DocumentPage";
 function ProtectedRoute({ children }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   return isAuthenticated ? children : <Navigate to="/login" replace />;
@@ -24,6 +25,10 @@ export default function App() {
       />
       <Route path="/projects/:projectId/board" element={<ProtectedRoute><BoardPage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route
+    path="/editor-test"
+    element={<DocumentPage />}
+/>
     </Routes>
   );
 }

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";
 import "./index.css";
 
+// import "./testWS";
 // QueryClient holds the cache for all server state.
 // staleTime: 1min means data stays "fresh" for 1 minute before React Query
 // considers it stale and refetches in the background.

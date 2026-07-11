@@ -39,7 +39,16 @@ def create_refresh_token(user_id: str) -> str:
         timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
     )
 
-
+def decode_access_token(token: str):
+    try:
+        return jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM],
+        )
+    except JWTError:
+        return None
+    
 def verify_token(token: str, token_type: str) -> Optional[str]:
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])

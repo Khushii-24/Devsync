@@ -6,4 +6,4 @@ from app.models.project import Project
 from app.models.column import Column
 from app.models.task import Task, TaskPriority
 from app.models.comment import Comment
-from app.models.document import Document
+from app.models.document import Document, DocumentVersion

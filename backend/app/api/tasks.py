@@ -179,7 +179,7 @@ async def update_task(
     db.refresh(task)
     event = build_event(
         "task.updated",
-        task.column.project_id,
+        str(task.column.project_id),
         TaskResponse.model_validate(task).model_dump(mode="json"),
         current_user.id,
     )

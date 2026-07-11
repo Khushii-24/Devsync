@@ -20,11 +20,8 @@ class Project(Base):
         order_by="Column.position",
         cascade="all, delete-orphan",
     )
-    documents = relationship(
-        "Document",
-        back_populates="project",
-        cascade="all, delete-orphan",
-    )
+    documents = relationship("Document", back_populates="project", cascade="all, delete-orphan")
+
     tasks = relationship(
     "Task",
     back_populates="project",

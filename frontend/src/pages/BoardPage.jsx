@@ -8,12 +8,16 @@ import KanbanBoard from '../components/board/KanbanBoard';
 import TaskDetailPanel from '../components/board/TaskDetailPanel';
 import FilterBar from '../components/board/FilterBar';
 import WorkspaceSidebar from '../components/board/WorkspaceSidebar';
+import { useRealtimeBoard } from '../hooks/useRealtimeBoard';
+// import { useRealtimeStore } from "../stores/realtime.store";
+import { PresenceAvatars } from "../components/board/PresenceAvatars";
+import { ConnectionStatusBadge } from "../components/board/ConnectionStatusBadge";
 
 function BoardPage() {
   const { projectId } = useParams();
+  useRealtimeBoard(projectId);
   const [searchParams] = useSearchParams();
   const [selectedTask, setSelectedTask] = useState(null);
-
   const { data: project, isLoading: projectLoading } = useProject(projectId);
   const { data: columns, isLoading: columnsLoading } = useColumns(projectId);
   const { data: tasks, isLoading: tasksLoading } = useTasks(projectId);
@@ -54,13 +58,31 @@ function BoardPage() {
       <WorkspaceSidebar workspaceId={project.workspace_id} activeProjectId={projectId} members={members} />
 
       <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="px-6 pt-6 pb-2">
-          <h1 className="text-xl font-semibold text-gray-900">{project.name}</h1>
-        </div>
+        <div className="px-6 pt-6 pb-2 flex justify-between items-center">
+
+    <div>
+        <h1 className="text-xl font-semibold text-gray-900">
+            {project.name}
+        </h1>
+    </div>
+
+    <div className="flex items-center gap-6">
+        <PresenceAvatars workspaceId={project.workspace_id} />
+
+        <ConnectionStatusBadge />
+    </div>
+
+</div>
 
         <FilterBar members={members} allLabels={allLabels} />
 
-        <div className="flex-1 overflow-x-auto">
+        <div style={{ padding: 10, background: "#eee" }}>
+    {/* <p>Connection: {connectionStatus}</p>
+    <p>Online Users: {onlineUsers.length}</p>
+
+    <pre>
+        {JSON.stringify(onlineUsers, null, 2)}
+    </pre> */}
           <KanbanBoard
             projectId={projectId}
             columns={columns}
