@@ -2,8 +2,7 @@
 
 import { useRef, useCallback, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from '../lib/axios';
-
+import axios from '../api/axios';
 // Debounced autosave: collapses rapid keystrokes into one PATCH request
 // 500ms after typing stops, rather than firing a request per keystroke.
 // We use a plain setTimeout ref (not lodash.debounce) to keep this

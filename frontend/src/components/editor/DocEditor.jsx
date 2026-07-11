@@ -7,7 +7,7 @@ import Mention from '@tiptap/extension-mention';
 import { ReactRenderer } from '@tiptap/react';
 import tippy from 'tippy.js';
 import MentionList from './MentionList';
-import axios from '../../lib/axios';
+import axios from '../../api/axios';
 function buildMentionSuggestion(workspaceId) {
   return {
     items: async ({ query }) => {

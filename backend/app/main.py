@@ -41,4 +41,8 @@ app.include_router(columns.router, prefix="/api/v1")
 app.include_router(tasks.router, prefix="/api/v1")
 app.include_router(workspaces.router, prefix="/api/v1")
 app.include_router(websocket.router, prefix="/api/v1")
-app.include_router(documents.router, prefix="/api", dependencies=[Depends(get_current_user)])
+app.include_router(
+    documents.router,
+    prefix="/api/v1",
+    dependencies=[Depends(get_current_user)],
+)

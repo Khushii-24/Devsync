@@ -26,7 +26,7 @@ export default function App() {
       <Route path="/projects/:projectId/board" element={<ProtectedRoute><BoardPage /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/login" replace />} />
       <Route
-    path="/editor-test"
+    path="/documents/:documentId"
     element={<DocumentPage />}
 />
     </Routes>
