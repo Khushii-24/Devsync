@@ -1,17 +1,49 @@
 // frontend/src/pages/DocumentPage.jsx
 
-import { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from '../lib/axios';
 import DocEditor from '../components/editor/DocEditor';
+import { useAutosave } from '../hooks/useAutosave';
 
-// Placeholder page just to visually confirm the editor renders end-to-end.
-// Day 4 replaces the local useState with a React Query fetch + the
-// useAutosave hook — this file will look quite different by end of day.
 export default function DocumentPage() {
-  const [content, setContent] = useState({ type: 'doc', content: [] });
+  const { documentId } = useParams();
+  const queryClient = useQueryClient();
+
+  const { data: document, isLoading } = useQuery({
+    queryKey: ['document', documentId],
+    queryFn: () => axios.get(`/documents/${documentId}`).then((r) => r.data),
+  });
+
+  const { scheduleSave, isSaving } = useAutosave(documentId);
+
+  const titleMutation = useMutation({
+    mutationFn: (title) => axios.patch(`/documents/${documentId}`, { title }).then((r) => r.data),
+    onSuccess: (updatedDoc) => queryClient.setQueryData(['document', documentId], updatedDoc),
+  });
+
+  if (isLoading) return <div className="p-8 text-gray-400">Loading...</div>;
 
   return (
     <div className="max-w-3xl mx-auto py-8">
-      <DocEditor content={content} onUpdate={setContent} />
+      <div className="flex items-center justify-between mb-4">
+        <input
+          defaultValue={document.title}
+          onBlur={(e) => {
+            // Title saves on blur, not debounced-per-keystroke — titles are
+            // short and infrequent edits, a separate debounce would be
+            // overkill. Content is the high-frequency case autosave targets.
+            if (e.target.value !== document.title) titleMutation.mutate(e.target.value);
+          }}
+          className="text-xl font-semibold outline-none border-b border-transparent focus:border-gray-300 px-1"
+        />
+        <span className="text-xs text-gray-400">{isSaving ? 'Saving...' : 'Saved'}</span>
+      </div>
+
+      <DocEditor
+        content={document.content}
+        onUpdate={scheduleSave}
+      />
     </div>
   );
 }
