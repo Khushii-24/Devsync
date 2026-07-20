@@ -60,14 +60,14 @@ function BoardPage() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <WorkspaceSidebar workspaceId={project.workspace_id} activeProjectId={projectId} members={members} />
 
-      <div className="flex-1 overflow-hidden flex flex-col">
-        <div className="px-6 pt-6 pb-2 flex justify-between items-center">
+      <div className="flex-1 overflow-hidden flex flex-col bg-white dark:bg-gray-900">
+        <div className="px-6 pt-6 pb-2 flex justify-between items-center border-b border-gray-100 dark:border-gray-800">
 
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
               {project.name}
             </h1>
           </div>
@@ -80,7 +80,7 @@ function BoardPage() {
         </div>
         <FilterBar members={members} allLabels={allLabels} />
 
-        <div className="flex-1 min-h-0 bg-[#eee] p-3">
+        <div className="flex-1 min-h-0 bg-gray-100 dark:bg-gray-950 p-3">
           <KanbanBoard
             projectId={projectId}
             columns={columns}

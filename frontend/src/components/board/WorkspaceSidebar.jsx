@@ -72,15 +72,15 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
   };
 
   return (
-    <div className="w-64 shrink-0 border-r border-gray-200 bg-white flex flex-col h-full font-sans select-none">
+    <div className="w-64 shrink-0 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col h-full font-sans select-none text-gray-900 dark:text-gray-100">
       {/* Workspace Header */}
-      <div className="p-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+      <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
             D
           </div>
           <div>
-            <div className="text-sm font-semibold text-gray-900 leading-tight">Devsync</div>
+            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-tight">Devsync</div>
             <div className="text-xs text-gray-400">Workspace</div>
           </div>
         </div>
@@ -93,7 +93,7 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Projects</span>
             <button
               onClick={() => setIsCreateOpen(true)}
-              className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-900 transition-colors"
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
               title="New Project"
             >
               <Plus size={14} />
@@ -103,7 +103,7 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
           {isLoading ? (
             <div className="px-3 py-2 text-xs text-gray-400">Loading projects...</div>
           ) : projects?.length === 0 ? (
-            <div className="px-3 py-6 text-center border border-dashed border-gray-200 rounded-lg">
+            <div className="px-3 py-6 text-center border border-dashed border-gray-200 dark:border-gray-800 rounded-lg">
               <p className="text-xs text-gray-400 mb-2">No projects yet</p>
               <button
                 onClick={() => setIsCreateOpen(true)}
@@ -120,8 +120,8 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
                   <div key={p.id} className="group relative">
                     <div
                       className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all duration-150 ${isActive
-                        ? 'bg-indigo-50/70 text-indigo-900 font-medium'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-200 font-medium'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                         }`}
                     >
                       <Link
@@ -134,7 +134,7 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
 
                       <div className="flex items-center gap-2">
                         {p.task_count > 0 && (
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${isActive ? 'bg-indigo-200/50 text-indigo-800' : 'bg-gray-100 text-gray-500'
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${isActive ? 'bg-indigo-200/50 dark:bg-indigo-950/80 text-indigo-800 dark:text-indigo-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
                             }`}>
                             {p.task_count}
                           </span>
@@ -142,7 +142,7 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
 
                         <button
                           onClick={() => setMenuOpenProjectId(menuOpenProjectId === p.id ? null : p.id)}
-                          className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-gray-200 rounded text-gray-400 hover:text-gray-600 transition-all"
+                          className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-gray-200 dark:hover:bg-gray-850 rounded text-gray-400 hover:text-gray-600 transition-all"
                         >
                           <MoreVertical size={14} />
                         </button>
@@ -151,10 +151,10 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
 
                     {/* Actions Dropdown */}
                     {menuOpenProjectId === p.id && (
-                      <div className="absolute right-2 top-8 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-30 w-36">
+                      <div className="absolute right-2 top-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 z-30 w-36">
                         <button
                           onClick={() => handleOpenRename(p)}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-xs text-left text-gray-700 hover:bg-gray-50"
+                          className="flex items-center gap-2 w-full px-3 py-2 text-xs text-left text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                         >
                           <Pencil size={12} /> Rename Project
                         </button>
@@ -163,7 +163,7 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
                             setProjectToDelete(p);
                             setMenuOpenProjectId(null);
                           }}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-xs text-left text-red-600 hover:bg-red-50 border-t border-gray-100"
+                          className="flex items-center gap-2 w-full px-3 py-2 text-xs text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 border-t border-gray-100 dark:border-gray-700"
                         >
                           <Trash2 size={12} /> Delete Project
                         </button>
@@ -175,21 +175,21 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
                       <div className="pl-8 pr-3 mt-1 space-y-1">
                         <Link
                           to={`/projects/${p.id}/board`}
-                          className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                          className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
                         >
                           <Columns size={12} />
                           <span>Board</span>
                         </Link>
                         <Link
                           to={`/projects/${p.id}/documents`}
-                          className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                          className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
                         >
                           <FileText size={12} />
                           <span>Documents</span>
                         </Link>
                         <Link
                           to={`/projects/${p.id}/analytics`}
-                          className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                          className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
                         >
                           <BarChart2 size={12} />
                           <span>Analytics</span>
@@ -205,7 +205,7 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
       </div>
 
       {/* Members Section */}
-      <div className="p-4 border-t border-gray-100 flex-shrink-0">
+      <div className="p-4 border-t border-gray-105 dark:border-gray-800 flex-shrink-0">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Members</span>
         </div>
@@ -214,13 +214,13 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
             <div
               key={m.user_id}
               title={m.name || m.email}
-              className="w-8 h-8 rounded-full bg-indigo-100 border-2 border-white text-xs font-bold text-indigo-700 flex items-center justify-center shrink-0 shadow-sm"
+              className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-950 border-2 border-white dark:border-gray-900 text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center justify-center shrink-0 shadow-sm"
             >
               {(m.name || m.email).slice(0, 2).toUpperCase()}
             </div>
           ))}
           {members?.length > 6 && (
-            <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white text-xs font-bold text-gray-600 flex items-center justify-center shrink-0 shadow-sm">
+            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 border-2 border-white dark:border-gray-900 text-xs font-bold text-gray-600 dark:text-gray-400 flex items-center justify-center shrink-0 shadow-sm">
               +{members.length - 6}
             </div>
           )}
@@ -238,42 +238,42 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
       {/* Rename Modal */}
       {projectToRename && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl border border-gray-100">
+          <div className="bg-white dark:bg-gray-850 rounded-xl p-6 w-full max-w-md shadow-xl border border-gray-100 dark:border-gray-700 text-gray-900 dark:text-gray-100">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-base font-semibold text-gray-900">Rename Project</h3>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white">Rename Project</h3>
               <button
                 onClick={() => setProjectToRename(null)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X size={18} />
               </button>
             </div>
             <form onSubmit={handleRenameSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Project Name</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-450 mb-1">Project Name</label>
                 <input
                   type="text"
                   value={renameName}
                   onChange={(e) => setRenameName(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   required
                   autoFocus
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Description (Optional)</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-450 mb-1">Description (Optional)</label>
                 <textarea
                   value={renameDesc}
                   onChange={(e) => setRenameDesc(e.target.value)}
                   rows={3}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setProjectToRename(null)}
-                  className="px-4 py-2 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   Cancel
                 </button>
@@ -293,15 +293,15 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
       {/* Delete Confirmation Modal */}
       {projectToDelete && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl border border-gray-100 text-center">
-            <h3 className="text-base font-semibold text-gray-900 mb-2">Delete Project</h3>
-            <p className="text-xs text-gray-500 mb-6">
+          <div className="bg-white dark:bg-gray-850 rounded-xl p-6 w-full max-w-sm shadow-xl border border-gray-100 dark:border-gray-700 text-center text-gray-900 dark:text-gray-100">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">Delete Project</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">
               Are you sure you want to delete <strong>{projectToDelete.name}</strong>? This action is permanent and will delete all associated columns, tasks, and documents.
             </p>
             <div className="flex justify-center gap-3">
               <button
                 onClick={() => setProjectToDelete(null)}
-                className="px-4 py-2 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
               >
                 Cancel
               </button>

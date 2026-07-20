@@ -14,8 +14,8 @@ function ToolbarButton({ onClick, isActive, children, label }) {
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={`p-1.5 rounded hover:bg-gray-100 transition-colors ${
-        isActive ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'
+      className={`p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
+        isActive ? 'bg-gray-200 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-450'
       }`}
     >
       {children}
@@ -27,7 +27,7 @@ export default function EditorToolbar({ editor }) {
   if (!editor) return null;
 
   return (
-    <div className="flex items-center gap-0.5 border-b border-gray-200 px-2 py-1.5">
+    <div className="flex items-center gap-0.5 border-b border-gray-200 dark:border-gray-800 px-2 py-1.5 bg-gray-50 dark:bg-gray-900">
       <ToolbarButton
         label="Heading 1"
         isActive={editor.isActive('heading', { level: 1 })}
@@ -50,7 +50,7 @@ export default function EditorToolbar({ editor }) {
         <Heading3 size={16} />
       </ToolbarButton>
 
-      <div className="w-px h-5 bg-gray-200 mx-1" />
+      <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
 
       <ToolbarButton
         label="Bold"
@@ -67,7 +67,7 @@ export default function EditorToolbar({ editor }) {
         <Italic size={16} />
       </ToolbarButton>
 
-      <div className="w-px h-5 bg-gray-200 mx-1" />
+      <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
 
       <ToolbarButton
         label="Bullet list"
@@ -84,7 +84,7 @@ export default function EditorToolbar({ editor }) {
         <ListOrdered size={16} />
       </ToolbarButton>
 
-      <div className="w-px h-5 bg-gray-200 mx-1" />
+      <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
 
       <ToolbarButton
         label="Code block"

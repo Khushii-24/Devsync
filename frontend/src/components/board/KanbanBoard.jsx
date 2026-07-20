@@ -133,13 +133,13 @@ function KanbanBoard({
 
         {/* Add Column Flow */}
         {isAdding ? (
-          <form onSubmit={handleAddColumnSubmit} className="w-72 shrink-0 bg-gray-50 rounded-xl p-3 flex flex-col gap-2">
+          <form onSubmit={handleAddColumnSubmit} className="w-72 shrink-0 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-850 rounded-xl p-3 flex flex-col gap-2">
             <input
               type="text"
               placeholder="Column name..."
               value={newColumnName}
               onChange={(e) => setNewColumnName(e.target.value)}
-              className="w-full border border-gray-200 rounded px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-850 text-gray-900 dark:text-gray-100 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               autoFocus
             />
             <div className="flex gap-2">
@@ -153,7 +153,7 @@ function KanbanBoard({
               <button
                 type="button"
                 onClick={() => setIsAdding(false)}
-                className="border border-gray-200 text-gray-500 hover:bg-gray-100 text-xs px-3 py-1.5 rounded"
+                className="border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 text-xs px-3 py-1.5 rounded"
               >
                 Cancel
               </button>
@@ -162,7 +162,7 @@ function KanbanBoard({
         ) : (
           <button
             onClick={() => setIsAdding(true)}
-            className="w-72 shrink-0 h-12 border-2 border-dashed border-gray-300 hover:border-indigo-500 rounded-xl flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-indigo-600 hover:bg-white/50 cursor-pointer transition-all duration-150"
+            className="w-72 shrink-0 h-12 border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-indigo-500 dark:hover:border-indigo-400 rounded-xl flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 hover:bg-white/50 dark:hover:bg-gray-800/35 cursor-pointer transition-all duration-150"
           >
             <Plus size={16} />
             <span>Add Column</span>

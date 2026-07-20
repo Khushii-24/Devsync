@@ -23,9 +23,9 @@ export default function WeeklyDigest({ projectId }) {
                 : null;
 
     return (
-        <div className="border border-slate-200 rounded-lg p-5 bg-white">
+        <div className="border border-slate-200 dark:border-gray-700 rounded-lg p-5 bg-white dark:bg-gray-800/40 text-gray-900 dark:text-gray-100">
             <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 text-slate-700 font-medium">
+                <div className="flex items-center gap-2 text-slate-700 dark:text-gray-200 font-medium">
                     <CalendarDays size={18} className="text-indigo-500" />
                     Weekly Digest
                 </div>
@@ -67,7 +67,7 @@ export default function WeeklyDigest({ projectId }) {
                         exit={{ opacity: 0, y: -6 }}
                         className="space-y-5"
                     >
-                        <p className="text-sm text-slate-600 leading-relaxed">{digest.period_summary}</p>
+                        <p className="text-sm text-slate-600 dark:text-gray-300 leading-relaxed">{digest.period_summary}</p>
 
                         <DigestSection
                             icon={<CheckCircle2 size={15} className="text-emerald-500" />}
@@ -94,7 +94,7 @@ export default function WeeklyDigest({ projectId }) {
                                 <ul className="space-y-1.5">
                                     {digest.top_contributors.map((c) => (
                                         <li key={c.name} className="flex items-center justify-between text-sm">
-                                            <span className="text-slate-700">{c.name}</span>
+                                            <span className="text-slate-700 dark:text-gray-200">{c.name}</span>
                                             <span className="text-slate-400 text-xs">{c.activity_count} actions</span>
                                         </li>
                                     ))}
@@ -120,7 +120,7 @@ function DigestSection({ icon, title, items, emptyText }) {
             ) : (
                 <ul className="space-y-1 list-disc list-inside">
                     {items.map((item, i) => (
-                        <li key={i} className="text-sm text-slate-600">
+                        <li key={i} className="text-sm text-slate-600 dark:text-gray-300">
                             {item}
                         </li>
                     ))}

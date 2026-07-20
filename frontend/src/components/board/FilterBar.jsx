@@ -29,37 +29,37 @@ function FilterBar({ members, allLabels }) {
   const hasActiveFilters = assignee || priority || label;
 
   return (
-    <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100">
+    <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <select
         value={assignee}
         onChange={(e) => setParam('assignee', e.target.value)}
-        className="text-sm border border-gray-200 rounded-md px-2 py-1"
+        className="text-sm border border-gray-200 dark:border-gray-700 rounded-md px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
       >
-        <option value="">All assignees</option>
+        <option value="" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">All assignees</option>
         {members?.map((m) => (
-          <option key={m.user_id} value={m.user_id}>{m.name || m.email}</option>
+          <option key={m.user_id} value={m.user_id} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">{m.name || m.email}</option>
         ))}
       </select>
 
       <select
         value={priority}
         onChange={(e) => setParam('priority', e.target.value)}
-        className="text-sm border border-gray-200 rounded-md px-2 py-1"
+        className="text-sm border border-gray-200 dark:border-gray-700 rounded-md px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
       >
-        <option value="">All priorities</option>
+        <option value="" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">All priorities</option>
         {PRIORITIES.map((p) => (
-          <option key={p} value={p}>{p}</option>
+          <option key={p} value={p} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">{p}</option>
         ))}
       </select>
 
       <select
         value={label}
         onChange={(e) => setParam('label', e.target.value)}
-        className="text-sm border border-gray-200 rounded-md px-2 py-1"
+        className="text-sm border border-gray-200 dark:border-gray-700 rounded-md px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
       >
-        <option value="">All labels</option>
+        <option value="" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">All labels</option>
         {allLabels.map((l) => (
-          <option key={l} value={l}>{l}</option>
+          <option key={l} value={l} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">{l}</option>
         ))}
       </select>
 

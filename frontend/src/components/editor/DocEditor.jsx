@@ -68,7 +68,7 @@ const DocEditor = forwardRef(function DocEditor(
 
       Mention.configure({
         HTMLAttributes: {
-          class: "mention text-indigo-600 bg-indigo-50 rounded px-1",
+          class: "mention text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 rounded px-1",
         },
         suggestion: buildMentionSuggestion(workspaceId),
       }),
@@ -92,7 +92,7 @@ const DocEditor = forwardRef(function DocEditor(
 
     editorProps: {
       attributes: {
-        class: "ProseMirror min-h-[400px] p-4 focus:outline-none",
+        class: "ProseMirror min-h-[400px] p-4 focus:outline-none text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900",
       },
     },
   });
@@ -132,7 +132,7 @@ const DocEditor = forwardRef(function DocEditor(
 }, [content, editor]);
 
   return (
-    <div className="border border-gray-200 rounded-lg bg-white">
+    <div className="border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900 overflow-hidden">
       <EditorToolbar editor={editor} />
       <EditorContent editor={editor} />
     </div>

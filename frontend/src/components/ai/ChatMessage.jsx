@@ -20,8 +20,8 @@ export default function ChatMessage({ message, onRetry }) {
     const bubbleClass = isUser
         ? "bg-blue-600 text-white"
         : isError
-        ? "bg-red-50 text-red-700 border border-red-200"
-        : "bg-gray-100 text-gray-900";
+        ? "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/60"
+        : "bg-gray-100 dark:bg-gray-850 text-gray-900 dark:text-gray-100";
 
     return (
         <div className={`flex flex-col ${isUser ? "items-end" : "items-start"} gap-1`}>

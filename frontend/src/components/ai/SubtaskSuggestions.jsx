@@ -63,14 +63,14 @@ export default function SubtaskSuggestions({ task, projectId, columnId, onClose 
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
-            className="border border-slate-200 rounded-lg p-4 bg-slate-50 mt-3"
+            className="border border-slate-200 dark:border-gray-700 rounded-lg p-4 bg-slate-50 dark:bg-gray-800 mt-3 text-gray-900 dark:text-gray-100"
         >
             <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-gray-200">
                     <Sparkles size={16} className="text-indigo-500" />
                     Break down this task
                 </div>
-                <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+                <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-gray-300">
                     <X size={16} />
                 </button>
             </div>
@@ -105,20 +105,20 @@ export default function SubtaskSuggestions({ task, projectId, columnId, onClose 
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: "auto" }}
                                     exit={{ opacity: 0, height: 0 }}
-                                    className="bg-white border border-slate-200 rounded-md p-2.5"
+                                    className="bg-white dark:bg-gray-850 border border-slate-200 dark:border-gray-750 rounded-md p-2.5"
                                 >
                                     <div className="flex items-start gap-2">
                                         <div className="flex-1 space-y-1">
                                             <input
                                                 value={s.title}
                                                 onChange={(e) => updateSuggestion(s._localId, "title", e.target.value)}
-                                                className="w-full text-sm font-medium border-none focus:ring-1 focus:ring-indigo-400 rounded px-1 py-0.5"
+                                                className="w-full text-sm font-medium border-none bg-transparent text-gray-900 dark:text-gray-105 focus:ring-1 focus:ring-indigo-400 rounded px-1 py-0.5"
                                             />
                                             <textarea
                                                 value={s.description}
                                                 onChange={(e) => updateSuggestion(s._localId, "description", e.target.value)}
                                                 rows={2}
-                                                className="w-full text-xs text-slate-500 border-none focus:ring-1 focus:ring-indigo-400 rounded px-1 py-0.5 resize-none"
+                                                className="w-full text-xs text-slate-505 dark:text-gray-400 border-none bg-transparent focus:ring-1 focus:ring-indigo-400 rounded px-1 py-0.5 resize-none"
                                             />
                                         </div>
                                         <button
@@ -142,7 +142,7 @@ export default function SubtaskSuggestions({ task, projectId, columnId, onClose 
                         <button
                             onClick={runDecompose}
                             disabled={isDecomposing}
-                            className="flex-1 py-2 rounded-md border border-slate-300 text-sm text-slate-600 hover:bg-slate-100"
+                            className="flex-1 py-2 rounded-md border border-slate-300 dark:border-gray-700 text-sm text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-750 bg-transparent"
                         >
                             Regenerate
                         </button>

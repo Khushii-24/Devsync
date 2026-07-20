@@ -30,7 +30,7 @@ export default function SourceChip({ source }) {
   return (
     <button
       onClick={handleClick}
-      className="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-2 py-0.5 hover:bg-blue-100 transition-colors"
+      className="inline-flex items-center gap-1 text-xs bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/60 rounded-full px-2 py-0.5 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
     >
       <Icon size={10} />
       {isTask ? "Task" : "Doc"}

@@ -44,13 +44,13 @@ export default function DocumentsSidebar({ projectId }) {
   });
 
   return (
-    <div className="w-56 border-r border-gray-200 h-full flex flex-col">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100">
+    <div className="w-56 border-r border-gray-200 dark:border-gray-800 h-full flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-950/30">
         <span className="text-xs font-semibold text-gray-500 uppercase">Documents</span>
         <button
           onClick={() => createMutation.mutate()}
           disabled={createMutation.isPending}
-          className="text-gray-400 hover:text-indigo-600"
+          className="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"
         >
           <Plus size={16} />
         </button>
@@ -63,7 +63,7 @@ export default function DocumentsSidebar({ projectId }) {
           <div
             key={doc.id}
             className={`group flex items-center gap-1.5 px-3 py-1.5 text-sm cursor-pointer relative ${
-              doc.id === activeId ? 'bg-indigo-50 text-indigo-700' : 'text-gray-700 hover:bg-gray-50'
+              doc.id === activeId ? 'bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-200 font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-850'
             }`}
           >
             <FileText size={14} className="shrink-0 text-gray-400" />
@@ -77,7 +77,7 @@ export default function DocumentsSidebar({ projectId }) {
                   if (e.key === 'Enter') e.target.blur();
                   if (e.key === 'Escape') setRenamingId(null);
                 }}
-                className="flex-1 min-w-0 text-sm outline-none border-b border-indigo-300 bg-transparent"
+                className="flex-1 min-w-0 text-sm outline-none border-b border-indigo-300 dark:border-indigo-500 bg-transparent text-gray-900 dark:text-gray-100"
               />
             ) : (
               <Link to={`/projects/${projectId}/documents/${doc.id}`} className="flex-1 min-w-0 truncate">
@@ -87,22 +87,22 @@ export default function DocumentsSidebar({ projectId }) {
 
             <button
               onClick={(e) => { e.preventDefault(); setMenuOpenId(menuOpenId === doc.id ? null : doc.id); }}
-              className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 shrink-0"
+              className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 shrink-0"
             >
               <MoreHorizontal size={14} />
             </button>
 
             {menuOpenId === doc.id && (
-              <div className="absolute right-2 top-7 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-10 w-32">
+              <div className="absolute right-2 top-7 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg py-1 z-10 w-32">
                 <button
                   onClick={() => { setRenamingId(doc.id); setMenuOpenId(null); }}
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left hover:bg-gray-50"
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   <Pencil size={12} /> Rename
                 </button>
                 <button
                   onClick={() => { deleteMutation.mutate(doc.id); setMenuOpenId(null); }}
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left text-red-600 hover:bg-red-50"
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
                 >
                   <Trash2 size={12} /> Delete
                 </button>

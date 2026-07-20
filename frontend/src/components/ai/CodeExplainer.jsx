@@ -55,9 +55,9 @@ export default function CodeExplainer({ editor, task }) {
                     tippyOptions={{ duration: 100 }}
                     shouldShow={({ editor }) => editor.isActive("codeBlock")}
                 >
-                    <button
+                     <button
                         onClick={handleExplain}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-900 text-white rounded-md shadow-md hover:bg-slate-800 transition-colors border border-slate-700 cursor-pointer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-900 dark:bg-gray-850 text-white rounded-md shadow-md hover:bg-slate-800 dark:hover:bg-gray-750 transition-colors border border-slate-700 dark:border-gray-600 cursor-pointer"
                     >
                         <Sparkles size={12} className="text-amber-400" />
                         Explain this
@@ -73,20 +73,20 @@ export default function CodeExplainer({ editor, task }) {
                         exit={{ opacity: 0, height: 0 }}
                         className="overflow-hidden mt-4"
                     >
-                        <div className="bg-slate-50 border border-slate-200 rounded-md p-4 relative">
+                        <div className="bg-slate-50 dark:bg-gray-800/50 border border-slate-200 dark:border-gray-700 rounded-md p-4 relative">
                             <button
                                 onClick={() => {
                                     setExplanation("");
                                     explainMutation.reset();
                                 }}
-                                className="absolute top-2 right-2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                                className="absolute top-2 right-2 text-slate-400 hover:text-slate-600 dark:hover:text-gray-300 transition-colors cursor-pointer"
                             >
                                 <X size={16} />
                             </button>
 
                             <div className="flex items-center gap-2 mb-2">
                                 <Sparkles size={16} className="text-indigo-500 animate-pulse" />
-                                <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                                <span className="text-xs font-semibold text-slate-700 dark:text-gray-200 uppercase tracking-wide">
                                     AI Code Explanation
                                 </span>
                             </div>
@@ -105,7 +105,7 @@ export default function CodeExplainer({ editor, task }) {
                             )}
 
                             {!explainMutation.isPending && explanation && (
-                                <p className="text-sm text-slate-600 leading-relaxed pr-6">
+                                <p className="text-sm text-slate-600 dark:text-gray-300 leading-relaxed pr-6">
                                     {explanation}
                                 </p>
                             )}

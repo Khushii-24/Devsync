@@ -135,7 +135,7 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
-            className="fixed right-0 top-0 h-full w-full sm:w-[420px] bg-white shadow-xl z-50 overflow-y-auto"
+            className="fixed right-0 top-0 h-full w-full sm:w-[420px] bg-white dark:bg-gray-900 border-l border-gray-100 dark:border-gray-850 shadow-xl z-50 overflow-y-auto text-gray-900 dark:text-gray-100"
           >
             <div className="p-5 flex flex-col gap-5">
               <div className="flex items-center justify-between">
@@ -143,12 +143,12 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowConfirm(true)}
-                    className="text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-red-50 transition-colors"
+                    className="text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
                     title="Delete Task"
                   >
                     <Trash2 size={16} />
                   </button>
-                  <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">
+                  <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl leading-none">
                     &times;
                   </button>
                 </div>
@@ -159,7 +159,7 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 onBlur={() => saveField('title', title)}
-                className="text-lg font-semibold text-gray-900 border-none outline-none focus:ring-2 focus:ring-blue-200 rounded px-1 -mx-1"
+                className="text-lg font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1 -mx-1"
                 placeholder="Task title"
               />
 
@@ -176,8 +176,8 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
                 </div>
 
                 <div className={showPreview 
-                  ? "prose prose-sm max-w-none border border-gray-200 rounded-md p-2 min-h-[100px] bg-slate-50 [&_.ProseMirror]:focus:outline-none" 
-                  : "w-full border border-gray-200 rounded-md p-2 outline-none focus-within:ring-2 focus-within:ring-blue-200 min-h-[100px] [&_.ProseMirror]:focus:outline-none"
+                  ? "prose prose-sm max-w-none border border-gray-200 dark:border-gray-700 rounded-md p-2 min-h-[100px] bg-slate-50 dark:bg-gray-800/40 [&_.ProseMirror]:focus:outline-none text-gray-900 dark:text-gray-100" 
+                  : "w-full border border-gray-200 dark:border-gray-700 rounded-md p-2 outline-none focus-within:ring-2 focus-within:ring-indigo-500 bg-white dark:bg-gray-850 text-gray-900 dark:text-gray-100 min-h-[100px] [&_.ProseMirror]:focus:outline-none"
                 }>
                   <EditorContent editor={editor} />
                 </div>
@@ -185,7 +185,7 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
               </div>
 
               {/* AI Subtask Decomposition */}
-              <div className="border-t border-gray-100 pt-4">
+              <div className="border-t border-gray-100 dark:border-gray-800 pt-4">
                 {!showBreakdown ? (
                   <button
                     onClick={() => setShowBreakdown(true)}
@@ -212,7 +212,7 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
                     setAssigneeId(e.target.value);
                     saveField('assignee_id', e.target.value || null); // empty string → null, "unassigned"
                   }}
-                  className="w-full text-sm border border-gray-200 rounded-md p-2"
+                  className="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-md p-2 bg-white dark:bg-gray-850 text-gray-900 dark:text-gray-100"
                 >
                   <option value="">Unassigned</option>
                   {members?.map((m) => (
@@ -233,7 +233,7 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
                     setDueDate(e.target.value);
                     saveField('due_date', e.target.value || null);
                   }}
-                  className="w-full text-sm border border-gray-200 rounded-md p-2"
+                  className="w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-850 text-gray-900 dark:text-gray-100 rounded-md p-2"
                 />
               </div>
 
@@ -246,10 +246,10 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
                     setPriority(e.target.value);
                     saveField('priority', e.target.value);
                   }}
-                  className="w-full text-sm border border-gray-200 rounded-md p-2"
+                  className="w-full text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-850 text-gray-900 dark:text-gray-100 rounded-md p-2"
                 >
                   {PRIORITIES.map((p) => (
-                    <option key={p} value={p}>{p}</option>
+                    <option key={p} value={p} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">{p}</option>
                   ))}
                 </select>
               </div>
@@ -261,7 +261,7 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
                   {labels.map((label) => (
                     <span
                       key={label}
-                      className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-700 rounded-full px-2 py-0.5"
+                      className="inline-flex items-center gap-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full px-2 py-0.5"
                     >
                       {label}
                       <button onClick={() => removeLabel(label)} className="text-gray-400 hover:text-gray-600">
@@ -275,9 +275,9 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
                     value={labelInput}
                     onChange={(e) => setLabelInput(e.target.value)}
                     placeholder="Add label..."
-                    className="flex-1 text-sm border border-gray-200 rounded-md p-2"
+                    className="flex-1 text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-850 text-gray-900 dark:text-gray-100 rounded-md p-2"
                   />
-                  <button type="submit" className="text-sm bg-gray-900 text-white rounded-md px-3">
+                  <button type="submit" className="text-sm bg-gray-900 dark:bg-gray-700 text-white rounded-md px-3">
                     Add
                   </button>
                 </form>
@@ -296,20 +296,20 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
             onClick={() => setShowConfirm(false)}
           >
             <motion.div
-              className="bg-white rounded-lg p-6 w-full max-w-sm shadow-xl"
+              className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-sm shadow-xl border border-gray-100 dark:border-gray-700 text-gray-900 dark:text-gray-100"
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-lg font-semibold mb-2 text-gray-900">Delete Task</h3>
-              <p className="text-sm text-gray-500 mb-4">
+              <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Delete Task</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 Are you sure you want to delete this task? This action cannot be undone.
               </p>
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setShowConfirm(false)}
-                  className="px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded"
+                  className="px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                 >
                   Cancel
                 </button>

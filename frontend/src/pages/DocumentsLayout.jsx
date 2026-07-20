@@ -16,7 +16,7 @@ export default function DocumentsLayout() {
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
+    <div className="flex h-screen w-full overflow-hidden bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <WorkspaceSidebar 
         workspaceId={project?.workspace_id} 
         activeProjectId={projectId} 
@@ -24,7 +24,7 @@ export default function DocumentsLayout() {
       />
       <div className="flex-1 flex min-w-0">
         <DocumentsSidebar projectId={projectId} />
-        <div className="flex-1 overflow-y-auto bg-white">
+        <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
           <Outlet />
         </div>
       </div>
