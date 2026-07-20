@@ -7,3 +7,6 @@ from app.models.column import Column
 from app.models.task import Task, TaskPriority
 from app.models.comment import Comment
 from app.models.document import Document, DocumentVersion
+from app.models.activity_log import ActivityLog
+from app.models.chunk import Chunk
+from app.models.notification import Notification

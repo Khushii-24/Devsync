@@ -17,6 +17,7 @@ import { useTaskPanelStore } from "../stores/taskPanelStore";
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
 import AIChatPanel from "../components/ai/AIChatPanel";
+import NotificationBell from "../components/notifications/NotificationBell";
 
 function BoardPage() {
   const { projectId } = useParams();
@@ -72,6 +73,7 @@ function BoardPage() {
           </div>
 
           <div className="flex items-center gap-6">
+            <NotificationBell projectId={projectId} />
             <PresenceAvatars workspaceId={project.workspace_id} />
             <ConnectionStatusBadge />
           </div>

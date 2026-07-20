@@ -7,6 +7,7 @@ import CycleTimeCard from "../components/analytics/CycleTimeCard";
 import WorkspaceSidebar from "../components/board/WorkspaceSidebar";
 import { useProject } from "../hooks/useProjects";
 import { useWorkspaceMembers } from "../hooks/useWorkspaceMembers";
+import NotificationBell from "../components/notifications/NotificationBell";
 
 export default function AnalyticsPage() {
     const { projectId } = useParams();
@@ -42,7 +43,10 @@ export default function AnalyticsPage() {
             />
             <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6 space-y-6">
                 <div className="max-w-5xl mx-auto space-y-6">
-                    <h1 className="text-xl font-semibold text-gray-950 dark:text-white">Analytics</h1>
+                    <div className="flex justify-between items-center">
+                        <h1 className="text-xl font-semibold text-gray-950 dark:text-white">Analytics</h1>
+                        <NotificationBell projectId={projectId} />
+                    </div>
 
                     <section className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
                         <h2 className="text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">Velocity — last 30 days</h2>

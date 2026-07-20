@@ -166,6 +166,24 @@ async def reorder_tasks(
                 "to_column_id": str(new_col_id),
             },
         )
+        new_column = db.query(Column).filter(Column.id == new_col_id).first()
+        if new_column and new_column.name.lower() == "done" and task.assignee_id:
+            from app.core.notifications import create_notification
+            from app.models.notification import NotificationType
+            await create_notification(
+                db=db,
+                recipient_id=str(task.assignee_id),
+                actor_id=str(current_user.id),
+                workspace_id=str(project.workspace_id),
+                project_id=str(project.id),
+                task_id=str(task.id),
+                type=NotificationType.TASK_DONE,
+                payload={
+                    "task_title": task.title,
+                    "column_name": new_column.name,
+                    "actor_name": current_user.name or current_user.username
+                }
+            )
 
     log_activity(
         db=db,
@@ -207,6 +225,7 @@ async def update_task(
     require_workspace_member(project.workspace_id, current_user, db)
 
     old_column_id = task.column_id
+    old_assignee_id = task.assignee_id
     updates = payload.model_dump(exclude_unset=True)
     for field, value in updates.items():
         setattr(task, field, value)
@@ -244,6 +263,47 @@ async def update_task(
             {ActivityLog.event_data: func.jsonb_set(ActivityLog.event_data, '{title}', cast(val, JSONB))},
             synchronize_session=False
         )
+
+    # Trigger Notifications
+    if "assignee_id" in updates and str(old_assignee_id) != str(updates["assignee_id"]) and updates["assignee_id"] is not None:
+        from app.core.notifications import create_notification
+        from app.models.notification import NotificationType
+        await create_notification(
+            db=db,
+            recipient_id=str(updates["assignee_id"]),
+            actor_id=str(current_user.id),
+            workspace_id=str(project.workspace_id),
+            project_id=str(project.id),
+            task_id=str(task.id),
+            type=NotificationType.ASSIGNED,
+            payload={
+                "task_title": task.title,
+                "actor_name": current_user.name or current_user.username
+            }
+        )
+
+    if "column_id" in updates and updates["column_id"] is not None:
+        new_col_uuid = UUID(str(updates["column_id"]))
+        if old_column_id != new_col_uuid:
+            # Check if new column name is "Done"
+            new_column = db.query(Column).filter(Column.id == new_col_uuid).first()
+            if new_column and new_column.name.lower() == "done" and task.assignee_id:
+                from app.core.notifications import create_notification
+                from app.models.notification import NotificationType
+                await create_notification(
+                    db=db,
+                    recipient_id=str(task.assignee_id),
+                    actor_id=str(current_user.id),
+                    workspace_id=str(project.workspace_id),
+                    project_id=str(project.id),
+                    task_id=str(task.id),
+                    type=NotificationType.TASK_DONE,
+                    payload={
+                        "task_title": task.title,
+                        "column_name": new_column.name,
+                        "actor_name": current_user.name or current_user.username
+                    }
+                )
 
     db.commit()
     def _sync_task_embedding(db: Session, task):

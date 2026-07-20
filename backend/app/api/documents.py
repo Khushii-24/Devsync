@@ -60,7 +60,7 @@ def _next_version_number(document_id: uuid.UUID, db:  Session) -> int:
 # ---------- Create ----------
 
 @router.post("/projects/{project_id}/documents", response_model=DocumentResponse, status_code=201)
-def create_document(
+async def create_document(
     project_id: uuid.UUID,
     payload: DocumentCreate,
     db:   Session = Depends(get_db),
@@ -81,6 +81,28 @@ def create_document(
     db.add(document)
     db.commit()
     db.refresh(document)
+
+    if payload.content:
+        from app.core.notifications import extract_mentioned_user_ids, create_notification
+        from app.models.notification import NotificationType
+        mentioned_user_ids = extract_mentioned_user_ids(payload.content)
+        for recipient_id in mentioned_user_ids:
+            await create_notification(
+                db=db,
+                recipient_id=recipient_id,
+                actor_id=str(user.id),
+                workspace_id=str(document.workspace_id),
+                project_id=str(document.project_id),
+                task_id=None,
+                type=NotificationType.MENTION,
+                payload={
+                    "document_title": document.title,
+                    "document_id": str(document.id),
+                    "actor_name": user.name or user.username
+                }
+            )
+        db.commit()
+
     return document
 
 
@@ -146,6 +168,28 @@ async def update_document(
         ))
 
     db.commit()
+
+    if content_changed and payload.content:
+        from app.core.notifications import extract_mentioned_user_ids, create_notification
+        from app.models.notification import NotificationType
+        mentioned_user_ids = extract_mentioned_user_ids(payload.content)
+        for recipient_id in mentioned_user_ids:
+            await create_notification(
+                db=db,
+                recipient_id=recipient_id,
+                actor_id=str(user.id),
+                workspace_id=str(document.workspace_id),
+                project_id=str(document.project_id),
+                task_id=None,
+                type=NotificationType.MENTION,
+                payload={
+                    "document_title": document.title,
+                    "document_id": str(document.id),
+                    "actor_name": user.name or user.username
+                }
+            )
+        db.commit()
+
     plain_text = extract_plain_text(document.content)  # strip TipTap JSON down to text — see note below
     upsert_embedding(db, project_id=document.project_id, source_type="document",
                       source_id=document.id, text=plain_text)
