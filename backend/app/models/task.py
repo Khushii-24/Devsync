@@ -2,7 +2,7 @@ from ctypes import ARRAY
 from sqlite3 import Date
 
 from sqlalchemy import Column, String, Text, Integer, DateTime, ForeignKey, Enum, func
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
+from sqlalchemy.dialects.postgresql import UUID, ARRAY, TSVECTOR
 from sqlalchemy.orm import relationship
 import uuid, enum
 from app.db.database import Base
@@ -70,6 +70,8 @@ class Task(Base):
         server_default=func.now(),
         onupdate=func.now(),
     )
+
+    search_vector = Column(TSVECTOR, nullable=True)
 
     project = relationship("Project", back_populates="tasks")
     column = relationship("Column", back_populates="tasks")

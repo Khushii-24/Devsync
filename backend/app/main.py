@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import asyncio
 from app.api import documents
-from app.api import auth, users, projects, columns, tasks, workspaces, websocket, analytics, notifications
+from app.api import auth, users, projects, columns, tasks, workspaces, websocket, analytics, notifications, search
 from app.core.websocket_manager import manager
 from fastapi import Depends
 from app.api.ai import router as ai_router
@@ -51,3 +51,4 @@ app.include_router(
 app.include_router(ai_router, prefix="/api/v1", tags=["ai"])
 app.include_router(analytics.router, prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
+app.include_router(search.router, prefix="/api/v1")

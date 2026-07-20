@@ -71,11 +71,15 @@ async def create_document(
         raise HTTPException(404, "Project not found")
     verify_workspace_member(project.workspace_id, user, db)
 
+    from app.core.embeddings import extract_plain_text
+    plain_text_val = extract_plain_text(payload.content) if payload.content else ""
+
     document = Document(
         project_id=project.id,
         workspace_id=project.workspace_id,  # derived from the project, never from client input
         title=payload.title,
         content=payload.content or {"type": "doc", "content": []},
+        content_text=plain_text_val,
         created_by=user.id,
     )
     db.add(document)
@@ -158,6 +162,8 @@ async def update_document(
         document.title = payload.title
     if payload.content is not None:
         document.content = payload.content
+        from app.core.embeddings import extract_plain_text
+        document.content_text = extract_plain_text(payload.content)
 
     version_number = None
     if content_changed:

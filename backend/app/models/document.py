@@ -2,8 +2,9 @@
 
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import String, ForeignKey, DateTime, Integer, Boolean
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from typing import Any
+from sqlalchemy import String, ForeignKey, DateTime, Integer, Boolean, Text
+from sqlalchemy.dialects.postgresql import UUID, JSONB, TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 
@@ -32,6 +33,9 @@ class Document(Base):
     )
 
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    content_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    search_vector: Mapped[Any] = mapped_column(TSVECTOR, nullable=True)
 
     created_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
