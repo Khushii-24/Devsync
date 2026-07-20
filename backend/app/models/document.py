@@ -73,3 +73,4 @@ class DocumentVersion(Base):
     )
 
     document = relationship("Document", back_populates="versions")
+    creator = relationship("User")

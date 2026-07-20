@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ReactMarkdown from 'react-markdown';
-import { useUpdateTask } from '../../hooks/useTasks';
+import { useUpdateTask, useDeleteTask } from '../../hooks/useTasks';
 import { useWorkspaceMembers } from '../../hooks/useWorkspaceMembers';
-
+import { Trash2 } from 'lucide-react';
+import SubtaskSuggestions from '../ai/SubtaskSuggestions';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
+import CodeExplainer from '../ai/CodeExplainer';
 const PRIORITIES = ['low', 'medium', 'high', 'urgent'];
 
 function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
   const updateTask = useUpdateTask(projectId);
   const { data: members } = useWorkspaceMembers(workspaceId);
 
-  // Local form state, not React Hook Form here — this panel autosaves per-field
-  // on blur/change rather than one big submit, so RHF's "submit the whole form"
-  // model doesn't fit as naturally as it did for Login/Register.
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [assigneeId, setAssigneeId] = useState('');
@@ -21,31 +22,70 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
   const [labels, setLabels] = useState([]);
   const [labelInput, setLabelInput] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showBreakdown, setShowBreakdown] = useState(false);
+  const deleteMutation = useDeleteTask(projectId);
 
-  // Re-sync local state whenever a DIFFERENT task is opened. Without this effect,
-  // opening task B while task A's fields are still in state would show stale
-  // values for a flash before anything re-renders correctly.
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3],
+        },
+      }),
+      Placeholder.configure({
+        placeholder: "Add a description (markdown supported)...",
+      }),
+    ],
+    content: description,
+    editable: !showPreview,
+    onBlur: ({ editor }) => {
+      saveField('description', editor.getHTML());
+    },
+  });
+
+  useEffect(() => {
+    if (editor) {
+      editor.setEditable(!showPreview);
+    }
+  }, [showPreview, editor]);
+
+
+  const confirmDelete = () => {
+    deleteMutation.mutate(task.id, {
+      onSuccess: () => {
+        setShowConfirm(false);
+        onClose();
+      },
+    });
+  };
+
   useEffect(() => {
   if (!task) return;
 
-  setTitle((prev) => (prev !== (task.title ?? "") ? task.title ?? "" : prev));
-
-  setDescription((prev) =>
-    prev !== (task.description ?? "") ? task.description ?? "" : prev
+  setShowBreakdown(false);
+  setTitle((prev) =>
+    prev !== (task.title ?? '') ? task.title ?? '' : prev
   );
-
+  setDescription((prev) => {
+    const next = task.description ?? "";
+    if (prev !== next) {
+      if (editor && editor.getHTML() !== next) {
+        editor.commands.setContent(next);
+      }
+      return next;
+    }
+    return prev;
+  });
   setAssigneeId((prev) =>
     prev !== (task.assignee_id ?? "") ? task.assignee_id ?? "" : prev
   );
-
   setDueDate((prev) =>
     prev !== (task.due_date ?? "") ? task.due_date ?? "" : prev
   );
-
   setPriority((prev) =>
     prev !== (task.priority ?? "medium") ? task.priority ?? "medium" : prev
   );
-
   setLabels((prev) => {
     const next = task.labels ?? [];
     return JSON.stringify(prev) !== JSON.stringify(next) ? next : prev;
@@ -100,9 +140,18 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
             <div className="p-5 flex flex-col gap-5">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-gray-400 uppercase tracking-wide">Task Details</span>
-                <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">
-                  &times;
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowConfirm(true)}
+                    className="text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-red-50 transition-colors"
+                    title="Delete Task"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                  <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">
+                    &times;
+                  </button>
+                </div>
               </div>
 
               {/* Title */}
@@ -114,7 +163,7 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
                 placeholder="Task title"
               />
 
-              {/* Description — markdown edit/preview toggle */}
+              {/* Description — edit/preview toggle */}
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs font-medium text-gray-500 uppercase">Description</label>
@@ -126,20 +175,30 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
                   </button>
                 </div>
 
-                {showPreview ? (
-                  // prose classes assume you have @tailwindcss/typography installed;
-                  // if not, ReactMarkdown still renders correctly, just unstyled
-                  <div className="prose prose-sm max-w-none border border-gray-200 rounded-md p-2 min-h-[100px]">
-                    <ReactMarkdown>{description || '*No description*'}</ReactMarkdown>
-                  </div>
+                <div className={showPreview 
+                  ? "prose prose-sm max-w-none border border-gray-200 rounded-md p-2 min-h-[100px] bg-slate-50 [&_.ProseMirror]:focus:outline-none" 
+                  : "w-full border border-gray-200 rounded-md p-2 outline-none focus-within:ring-2 focus-within:ring-blue-200 min-h-[100px] [&_.ProseMirror]:focus:outline-none"
+                }>
+                  <EditorContent editor={editor} />
+                </div>
+                <CodeExplainer editor={editor} task={task} />
+              </div>
+
+              {/* AI Subtask Decomposition */}
+              <div className="border-t border-gray-100 pt-4">
+                {!showBreakdown ? (
+                  <button
+                    onClick={() => setShowBreakdown(true)}
+                    className="flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                  >
+                    ✨ Break down into subtasks
+                  </button>
                 ) : (
-                  <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    onBlur={() => saveField('description', description)}
-                    rows={5}
-                    className="w-full text-sm border border-gray-200 rounded-md p-2 outline-none focus:ring-2 focus:ring-blue-200"
-                    placeholder="Add a description (markdown supported)..."
+                  <SubtaskSuggestions
+                    task={task}
+                    projectId={projectId}
+                    columnId={task.column_id}
+                    onClose={() => setShowBreakdown(false)}
                   />
                 )}
               </div>
@@ -227,6 +286,45 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
           </motion.div>
         </>
       )}
+      <AnimatePresence>
+        {showConfirm && (
+          <motion.div
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowConfirm(false)}
+          >
+            <motion.div
+              className="bg-white rounded-lg p-6 w-full max-w-sm shadow-xl"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-semibold mb-2 text-gray-900">Delete Task</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Are you sure you want to delete this task? This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setShowConfirm(false)}
+                  className="px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  disabled={deleteMutation.isPending}
+                  className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded disabled:opacity-50"
+                >
+                  {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AnimatePresence>
   );
 }

@@ -21,5 +21,6 @@ class ProjectResponse(BaseModel):
     name: str
     description: Optional[str] = None
     created_at: datetime
+    task_count: int = 0
 
     model_config = ConfigDict(from_attributes=True)  # lets Pydantic read straight off the SQLAlchemy object, no manual dict conversion

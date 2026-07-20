@@ -1,20 +1,19 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useState } from "react";
+import { Sparkles } from "lucide-react";
+import SubtaskSuggestions from "../ai/SubtaskSuggestions";
 
-function TaskCard({ task, onOpenDetail  }) {
-  // useSortable wraps useDraggable + useDroppable together, and additionally
-  // tracks this item's INDEX within its SortableContext (see KanbanColumn) —
-  // that index awareness is what Day 4's plain useDraggable didn't have.
+function TaskCard({ task, onOpenDetail }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
-    data: { columnId: task.column_id }, // stashed on the drag event so onDragEnd
-    // can tell which column a task STARTED in without a lookup
+    data: { columnId: task.column_id },
   });
+  const [showBreakdown, setShowBreakdown] = useState(false);
 
   const style = {
-    transform: CSS.Transform.toString(transform), // Transform (not Translate) — sortable
-    // items also need to visually shift/shrink to make room, not just follow the pointer
-    transition, // smooth animation when OTHER cards slide to make space — this comes free from useSortable
+    transform: CSS.Transform.toString(transform),
+    transition,
     opacity: isDragging ? 0.5 : 1,
   };
 
@@ -25,9 +24,9 @@ function TaskCard({ task, onOpenDetail  }) {
       {...attributes}
       {...listeners}
       onClick={() => {
-  console.log("Task clicked:", task);
-  onOpenDetail(task);
-}}
+        console.log("Task clicked:", task);
+        onOpenDetail(task);
+      }}
       className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 mb-2 cursor-grab active:cursor-grabbing"
     >
       <p className="text-sm font-medium text-gray-900">{task.title}</p>

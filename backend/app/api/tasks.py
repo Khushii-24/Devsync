@@ -1,10 +1,14 @@
 from venv import logger
 
+import json
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import func
+from sqlalchemy import func, cast
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Session
 from uuid import UUID
-
+from app.core.embeddings import upsert_embedding,delete_embeddings
+from app.core.activity import log_activity
+from app.models.activity_log import ActivityLog, ActivityEventType
 from app.db.database import get_db
 from app.core.dependencies import get_current_user
 from app.models import Task, Column, User
@@ -49,8 +53,28 @@ async def create_task(
 
     task = Task(project_id=project.id, position=max_position + 1, **payload.model_dump())
     db.add(task)
+    db.flush() 
+    print("Task title:", task.title) # generates task.id before using it
+    log_activity(
+        db=db,
+        workspace_id=project.workspace_id,
+        project_id=project.id,
+        task_id=task.id,
+        actor_id=current_user.id,
+        event_type=ActivityEventType.TASK_CREATED,
+        event_data={
+            "title": task.title,
+            "column_id": str(task.column_id),
+        },
+
+    )
     db.commit()
+    def _sync_task_embedding(db: Session, task):
+        text = f"{task.title}\n{task.description or ''}"
+        upsert_embedding(db, project_id=task.project_id, source_type="task",
+                        source_id=task.id, text=text)
     db.refresh(task)
+    _sync_task_embedding(db, task)
     event = build_event(
         event_type="task.created",
         project_id=str(task.project_id),
@@ -60,10 +84,6 @@ async def create_task(
     try:
         await manager.publish(str(task.project_id), event)
     except Exception:
-        # A Redis hiccup should never roll back or fail a successful DB write.
-        # The REST response below is still correct and already committed;
-        # worst case here is other users just don't get a live update for
-        # this one change until their next refetch. Log it, don't raise.
         logger.exception("Failed to publish task.created event")
     return task
 
@@ -103,43 +123,61 @@ async def reorder_tasks(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Called once per drag-drop event (Day 5). The frontend sends the FULL new
-    arrangement for every task whose column or position changed as a result of
-    one drag — could be just the moved task, or that task plus everyone below it
-    in both the source and destination columns (their positions shifted by one).
-    """
+
     project = get_project_or_404(payload.project_id, db)
     require_workspace_member(project.workspace_id, current_user, db)
 
     task_ids = [item.task_id for item in payload.tasks]
 
-    # Fetch all target tasks in ONE query instead of one query per item —
-    # this is the actual "batch" part that avoids N round-trips.
     tasks = db.query(Task).filter(Task.id.in_(task_ids)).all()
     tasks_by_id = {t.id: t for t in tasks}
 
     if len(tasks_by_id) != len(task_ids):
-        # someone sent a task_id that doesn't exist, or a stale/deleted id
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="One or more tasks not found")
 
     for task in tasks:
-        # Guards against a manipulated payload trying to reorder tasks from a
-        # DIFFERENT project into this one's membership check — every task here
-        # must actually belong to the project we validated membership against.
         if task.project_id != payload.project_id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Task {task.id} does not belong to project {payload.project_id}",
             )
 
-    # All validation passed — now apply every update. Nothing is committed yet,
-    # so if anything above had raised, none of these would exist.
+    moved_tasks = []
     for item in payload.tasks:
         task = tasks_by_id[item.task_id]
+        old_column_id = task.column_id
+        if old_column_id != item.column_id:
+            moved_tasks.append((task, old_column_id, item.column_id))
         task.column_id = item.column_id
         task.position = item.position
 
+    # Log individual TASK_MOVED events for the actual movements
+    for task, old_col_id, new_col_id in moved_tasks:
+        log_activity(
+            db=db,
+            workspace_id=project.workspace_id,
+            project_id=project.id,
+            task_id=task.id,
+            actor_id=current_user.id,
+            event_type=ActivityEventType.TASK_MOVED,
+            event_data={
+                "title": task.title,
+                "from_column_id": str(old_col_id),
+                "to_column_id": str(new_col_id),
+            },
+        )
+
+    log_activity(
+        db=db,
+        workspace_id=project.workspace_id,
+        project_id=project.id,
+        actor_id=current_user.id,
+        event_type=ActivityEventType.TASK_MOVED,
+        event_data={
+            "task_count": len(payload.tasks),
+        },
+    )
+    
     db.commit() 
     event = build_event(
     "task.reordered",
@@ -168,15 +206,52 @@ async def update_task(
     project = get_project_or_404(task.project_id, db)
     require_workspace_member(project.workspace_id, current_user, db)
 
-    # if column_id is being changed here, we do NOT touch position — that's what
-    # the dedicated reorder endpoint below is for. A plain PATCH from the detail panel
-    # shouldn't silently corrupt drag ordering.
+    old_column_id = task.column_id
     updates = payload.model_dump(exclude_unset=True)
     for field, value in updates.items():
         setattr(task, field, value)
 
+    log_activity(
+        db,
+        workspace_id=task.project.workspace_id,
+        project_id=task.project_id,
+        task_id=task.id,
+        actor_id=current_user.id,
+        event_type=ActivityEventType.TASK_UPDATED,
+        event_data={"changed_fields": list(updates.keys())},
+    )
+
+    if "column_id" in updates and updates["column_id"] is not None:
+        new_col_uuid = UUID(str(updates["column_id"]))
+        if old_column_id != new_col_uuid:
+            log_activity(
+                db=db,
+                workspace_id=project.workspace_id,
+                project_id=project.id,
+                task_id=task.id,
+                actor_id=current_user.id,
+                event_type=ActivityEventType.TASK_MOVED,
+                event_data={
+                    "title": task.title,
+                    "from_column_id": str(old_column_id),
+                    "to_column_id": str(new_col_uuid),
+                },
+            )
+
+    if "title" in updates:
+        val = json.dumps(updates["title"])
+        db.query(ActivityLog).filter(ActivityLog.task_id == task.id).update(
+            {ActivityLog.event_data: func.jsonb_set(ActivityLog.event_data, '{title}', cast(val, JSONB))},
+            synchronize_session=False
+        )
+
     db.commit()
+    def _sync_task_embedding(db: Session, task):
+        text = f"{task.title}\n{task.description or ''}"
+        upsert_embedding(db, project_id=task.project_id, source_type="task",
+                        source_id=task.id, text=text)
     db.refresh(task)
+    _sync_task_embedding(db, task)
     event = build_event(
         "task.updated",
         str(task.column.project_id),
@@ -198,15 +273,25 @@ async def delete_task(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    task = db.query(Task).filter(Task.id == task_id).first()
-    # ...existing 404 + access-control checks...
-    project_id = task.column.project_id
+    task = get_task_or_404(task_id, db)
+    project = get_project_or_404(task.project_id, db)
+    require_workspace_member(project.workspace_id, current_user, db)
+
+    project_id = project.id
+    log_activity(
+        db,
+        workspace_id=task.project.workspace_id,
+        project_id=task.project_id,
+        task_id=task.id,
+        actor_id=current_user.id,
+        event_type=ActivityEventType.TASK_DELETED,
+        event_data={"title": task.title},  # snapshot title since task row won't exist to look it up later
+    )
+    delete_embeddings(db, source_type="task", source_id=task_id)
+
     db.delete(task)
     db.commit()
 
-    # There's no object left to serialize through TaskResponse — the payload
-    # for a delete is intentionally minimal: just enough for the frontend to
-    # know which cache entry to remove.
     event = build_event("task.deleted", str(project_id), {"task_id": str(task_id)}, current_user.id)
     try:
         await manager.publish(str(project_id), event)

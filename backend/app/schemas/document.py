@@ -47,13 +47,10 @@ class DocumentVersionSummary(BaseModel):
     id: uuid.UUID
     version_number: int
     created_by: uuid.UUID
+    created_by_name: str  # populated in the endpoint via version.creator.name
     created_at: datetime
 
     class Config:
         from_attributes = True
-
-
-# Only the detail endpoint (single version fetch, for diff/rollback preview)
-# includes content — same lazy-load reasoning as DocumentSummary above.
 class DocumentVersionDetail(DocumentVersionSummary):
     content: dict

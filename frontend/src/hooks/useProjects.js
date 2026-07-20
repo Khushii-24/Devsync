@@ -1,7 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from "../api/axios";// Query key convention: array form so React Query can invalidate by prefix.
-// ['projects', workspaceId] means "invalidate all project queries for this workspace"
-// without needing to know every exact key that's been fetched.
+import api from "../api/axios";
 const projectKeys = {
   all: (workspaceId) => ['projects', workspaceId],
   detail: (projectId) => ['project', projectId],
@@ -14,7 +12,7 @@ export function useProjects(workspaceId) {
       const { data } = await api.get(`/workspaces/${workspaceId}/projects`);
       return data;
     },
-    enabled: !!workspaceId, // don't fire until we actually have a workspaceId (e.g. before route params resolve)
+    enabled: !!workspaceId,
   });
 }
 
@@ -37,9 +35,6 @@ export function useCreateProject(workspaceId) {
       return data;
     },
     onSuccess: () => {
-      // simplest-correct approach for now: invalidate → React Query refetches the list
-      // in the background and every subscribed component re-renders with fresh data.
-      // No optimistic insert yet — that's a Day 5-style pattern we're deferring.
       queryClient.invalidateQueries({ queryKey: projectKeys.all(workspaceId) });
     },
   });

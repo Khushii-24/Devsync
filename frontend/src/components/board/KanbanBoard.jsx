@@ -1,16 +1,23 @@
+import { useState } from 'react';
 import { DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCorners } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
+import { Plus } from 'lucide-react';
 import KanbanColumn from './KanbanColumn';
 import { useReorderTasks } from '../../hooks/useTasks';
+import { useCreateColumn } from '../../hooks/useColumns';
 
 function KanbanBoard({
   projectId,
   columns,
   tasks,
   onOpenDetail,
-  dragDisabled 
+  dragDisabled
 }) {
   console.log("KanbanBoard projectId:", projectId);
+
+  const [isAdding, setIsAdding] = useState(false);
+  const [newColumnName, setNewColumnName] = useState('');
+  const createColumnMutation = useCreateColumn(projectId);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -25,6 +32,21 @@ function KanbanBoard({
 
   const tasksByColumn = (columnId) =>
     tasks.filter((t) => t.column_id === columnId).sort((a, b) => a.position - b.position);
+
+  const handleAddColumnSubmit = (e) => {
+    e.preventDefault();
+    if (!newColumnName.trim()) return;
+
+    createColumnMutation.mutate(
+      { name: newColumnName.trim() },
+      {
+        onSuccess: () => {
+          setNewColumnName('');
+          setIsAdding(false);
+        },
+      }
+    );
+  };
 
   function handleDragEnd(event) {
     const { active, over } = event;
@@ -91,9 +113,9 @@ function KanbanBoard({
     console.log("projectId:", projectId);
 
     console.log({
-    newArrangement,
-    project_id: projectId,
-    tasks: reorderItems,
+      newArrangement,
+      project_id: projectId,
+      tasks: reorderItems,
     });
     reorderMutation.mutate({
       newArrangement,
@@ -104,10 +126,48 @@ function KanbanBoard({
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-      <div className="flex gap-4 overflow-x-auto p-4">
+      <div className="h-full flex gap-4 overflow-x-auto p-2 items-start">
         {columns.map((column) => (
-          <KanbanColumn key={column.id} column={column} tasks={tasksByColumn(column.id)} onOpenDetail={onOpenDetail} />
+          <KanbanColumn key={column.id} column={column} tasks={tasksByColumn(column.id)} projectId={projectId} onOpenDetail={onOpenDetail} />
         ))}
+
+        {/* Add Column Flow */}
+        {isAdding ? (
+          <form onSubmit={handleAddColumnSubmit} className="w-72 shrink-0 bg-gray-50 rounded-xl p-3 flex flex-col gap-2">
+            <input
+              type="text"
+              placeholder="Column name..."
+              value={newColumnName}
+              onChange={(e) => setNewColumnName(e.target.value)}
+              className="w-full border border-gray-200 rounded px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={createColumnMutation.isPending}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded disabled:opacity-50"
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsAdding(false)}
+                className="border border-gray-200 text-gray-500 hover:bg-gray-100 text-xs px-3 py-1.5 rounded"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        ) : (
+          <button
+            onClick={() => setIsAdding(true)}
+            className="w-72 shrink-0 h-12 border-2 border-dashed border-gray-300 hover:border-indigo-500 rounded-xl flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-indigo-600 hover:bg-white/50 cursor-pointer transition-all duration-150"
+          >
+            <Plus size={16} />
+            <span>Add Column</span>
+          </button>
+        )}
       </div>
     </DndContext>
   );

@@ -8,12 +8,16 @@ import { ReactRenderer } from '@tiptap/react';
 import tippy from 'tippy.js';
 import MentionList from './MentionList';
 import axios from '../../api/axios';
+import { TaskChip } from './TaskChipExtension';
+import { forwardRef, useImperativeHandle } from 'react';
+import { useRef } from 'react';
+import { useEffect } from 'react';
 function buildMentionSuggestion(workspaceId) {
   return {
     items: async ({ query }) => {
       const { data } = await axios.get(`/workspaces/${workspaceId}/members`);
       return data
-        .filter((m) => m.user.name.toLowerCase().includes(query.toLowerCase()))
+        .filter((m) => m.user.username.toLowerCase().includes(query.toLowerCase()))
         .slice(0, 5);
     },
     render: () => {
@@ -45,34 +49,94 @@ function buildMentionSuggestion(workspaceId) {
   };
 }
 
-export default function DocEditor({ content, onUpdate, editable = true, workspaceId }) {
+const DocEditor = forwardRef(function DocEditor(
+  { content, onUpdate, editable = true, workspaceId, projectId,},
+  ref
+) {
+  const isApplyingRemote = useRef(false);
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
-      Placeholder.configure({ placeholder: 'Start writing...' }),
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3],
+        },
+      }),
+
+      Placeholder.configure({
+        placeholder: "Start writing...",
+      }),
+
       Mention.configure({
-        HTMLAttributes: { class: 'mention text-indigo-600 bg-indigo-50 rounded px-1' },
+        HTMLAttributes: {
+          class: "mention text-indigo-600 bg-indigo-50 rounded px-1",
+        },
         suggestion: buildMentionSuggestion(workspaceId),
       }),
+      console.log("PROJECT ID:", projectId),
+      TaskChip.configure({
+  fetchProjectTasks: () => axios.get(`/projects/${projectId}/tasks`),
+  projectId,
+  workspaceId,
+}),
     ],
+
     content,
+
     editable,
-    
+
     onUpdate: ({ editor }) => {
-      onUpdate?.(editor.getJSON());
-    },
-    editorProps: {
-  attributes: {
-    class: "ProseMirror min-h-[400px] p-4 focus:outline-none",
-  },
+  if (isApplyingRemote.current) return;
+
+  onUpdate?.(editor.getJSON());
 },
+
+    editorProps: {
+      attributes: {
+        class: "ProseMirror min-h-[400px] p-4 focus:outline-none",
+      },
+    },
   });
-  
-  if (!editor) return null;
+  useImperativeHandle(
+    ref,
+    () => ({
+      applyRemoteContent(newContent) {
+  if (!editor) return;
+
+  isApplyingRemote.current = true;
+
+  editor.commands.setContent(newContent);
+
+  requestAnimationFrame(() => {
+    isApplyingRemote.current = false;
+  });
+}
+    }),
+    [editor]
+  );
+
+  useEffect(() => {
+  if (!editor || !content) return;
+
+  // Don't replace the document if it's already identical.
+  if (JSON.stringify(editor.getJSON()) === JSON.stringify(content)) {
+    return;
+  }
+
+  isApplyingRemote.current = true;
+
+  editor.commands.setContent(content);
+
+  requestAnimationFrame(() => {
+    isApplyingRemote.current = false;
+  });
+}, [content, editor]);
+
   return (
     <div className="border border-gray-200 rounded-lg bg-white">
       <EditorToolbar editor={editor} />
       <EditorContent editor={editor} />
     </div>
   );
-}
+});
+
+export default DocEditor;

@@ -52,7 +52,23 @@ export function useDeleteTask(projectId) {
       await api.delete(`/tasks/${taskId}`);
       return taskId;
     },
-    onSuccess: () => {
+    onMutate: async (taskId) => {
+      const queryKey = taskKeys.all(projectId);
+      await queryClient.cancelQueries({ queryKey });
+      const previousTasks = queryClient.getQueryData(queryKey);
+
+      if (previousTasks) {
+        queryClient.setQueryData(queryKey, previousTasks.filter((t) => t.id !== taskId));
+      }
+
+      return { previousTasks };
+    },
+    onError: (err, taskId, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(taskKeys.all(projectId), context.previousTasks);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: taskKeys.all(projectId) });
     },
   });

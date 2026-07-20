@@ -27,3 +27,7 @@ class Project(Base):
     back_populates="project",
     cascade="all, delete-orphan",
     )
+
+    @property
+    def task_count(self) -> int:
+        return len(self.tasks)
