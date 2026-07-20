@@ -9,6 +9,7 @@ import DocumentsLayout from "./pages/DocumentsLayout";
 import DocumentsEmptyState from "./pages/DocumentsEmptyState";
 import TaskDetailPanelHost from "./components/TaskDetailPanelHost";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import CommandPalette from "./components/search/CommandPalette";
 
 function ProtectedRoute({ children }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
       <TaskDetailPanelHost />
+      <CommandPalette />
     </>
   );
 }
