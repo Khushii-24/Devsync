@@ -5,7 +5,9 @@ import json
 import redis.asyncio as redis
 import asyncio
 
-REDIS_URL = "redis://127.0.0.1:6379"
+from app.core.config import settings
+
+REDIS_URL = settings.REDIS_URL
 
 class ConnectionManager:
     def __init__(self):
