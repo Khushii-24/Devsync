@@ -1,6 +1,14 @@
 # DevSync ⚡
 
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+
 **DevSync** is a modern, real-time engineering collaboration platform designed for software teams. It unifies interactive **Kanban project management**, **collaborative Markdown documentation**, **real-time WebSocket sync**, **granular RBAC permissions**, **AI-assisted task breakdown**, and **activity audit logging** into a single sleek web interface.
+
+> **Why I Built This**: DevSync was built to demonstrate a highly responsive, real-time collaboration application featuring strict access controls, soft-delete safety mechanisms, dynamic system activity auditing, and an integrated Retrieval-Augmented Generation (RAG) vector database pipeline.
 
 ---
 
@@ -18,6 +26,57 @@ You can access the live system immediately without registration using the follow
 * **Email**: `demo@devsync.io`
 * **Password**: `password123`
 * **Role**: Owner (Quantum Product Suite)
+
+---
+
+## 🗺️ System Architecture
+
+```mermaid
+graph TD
+    %% Frontend Layer
+    subgraph Frontend [Vercel Deployment]
+        UI[React 18 Single Page App]
+        State[Zustand State Store]
+        Cache[TanStack Query Cache]
+        UI --> State
+        UI --> Cache
+    end
+
+    %% Network Protocols
+    UI -- "HTTP REST & SSE" --> FastAPI
+    UI -- "WebSocket (ws://)" --> WS[WebSocket Connection Handler]
+
+    %% Backend Layer
+    subgraph Backend [Render Container]
+        FastAPI[FastAPI Web Server]
+        SQLAlchemy[SQLAlchemy 2.0 ORM]
+        FastAPI --> SQLAlchemy
+        WS --> RedisClient[Redis Client]
+    end
+
+    %% Database & Cache Layer
+    subgraph Storage [Render Database Services]
+        PostgreSQL[(PostgreSQL DB + pgvector)]
+        Redis[(Redis Key-Value Cache)]
+        SQLAlchemy --> PostgreSQL
+        RedisClient --> Redis
+    end
+
+    %% AI Pipeline
+    subgraph AI [Local Development AI Engine]
+        Ollama[Ollama LLM Server]
+        EmbedPipeline[pure-Python Embedding Generator]
+        FastAPI -- "api/generate" --> Ollama
+        EmbedPipeline --> PostgreSQL
+    end
+
+    classDef orange fill:#ffefe0,stroke:#f59e0b,stroke-width:2px;
+    classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px;
+    classDef green fill:#ecfdf5,stroke:#059669,stroke-width:2px;
+    class UI,State,Cache orange;
+    class FastAPI,SQLAlchemy,WS,RedisClient,EmbedPipeline blue;
+    class PostgreSQL,Redis,Ollama green;
+```
 
 ---
 
@@ -41,7 +100,8 @@ You can access the live system immediately without registration using the follow
 - **Database Migrations**: [Alembic](https://alembic.sqlalchemy.org/)
 - **Real-time Engine**: WebSockets with custom connection manager
 - **Authentication**: OAuth2 with JWT tokens & passlib password hashing
-- **Vector / RAG Search**: PostgreSQL Full-Text Search TSVECTOR & `pgvector`
+- **Search System**: PostgreSQL Full-Text Search index (`TSVECTOR` for keywords)
+- **Vector / RAG Search**: PostgreSQL `pgvector` index (384-dimensional cosine similarity embeddings)
 
 ### Frontend
 - **Framework**: [React 18](https://react.dev/) (JS) built with [Vite](https://vitejs.dev/)
