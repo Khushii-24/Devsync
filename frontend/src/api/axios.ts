@@ -1,10 +1,11 @@
 import axios from "axios";
 import { useAuthStore } from "../stores/auth.store";
 
-// All API calls go through this single instance — one place to configure base URL,
-// headers, interceptors. Never use plain axios.get() directly in components.
+const rawApiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const baseURL = rawApiUrl.endsWith("/api/v1") ? rawApiUrl : `${rawApiUrl.replace(/\/+$/, '')}/api/v1`;
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -88,8 +89,8 @@ api.interceptors.response.use(
       try {
         // Use plain axios here (not our api instance) to avoid the interceptor
         // catching a 401 on this refresh call and creating infinite recursion
-        const { data } = await api.post(
-          "/api/v1/auth/refresh",
+        const { data } = await axios.post(
+          `${baseURL}/auth/refresh`,
           { refresh_token: refreshToken }
         );
 

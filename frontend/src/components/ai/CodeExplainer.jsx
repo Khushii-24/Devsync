@@ -3,14 +3,14 @@ import { BubbleMenu } from "@tiptap/react/menus";
 import { useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Sparkles, Loader2 } from "lucide-react";
-import axios from "../../api/axios";
+import api from "../../api/axios";
 
 export default function CodeExplainer({ editor, task }) {
     const [explanation, setExplanation] = useState("");
 
     const explainMutation = useMutation({
         mutationFn: async (code) => {
-            const { data } = await axios.post("/ai/explain-code", {
+            const { data } = await api.post("/ai/explain-code", {
                 task_id: task.id,
                 code: code,
             });

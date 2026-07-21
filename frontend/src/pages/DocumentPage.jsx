@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from '../api/axios';
+import api from '../api/axios';
 import DocEditor from '../components/editor/DocEditor';
 import { useAutosave } from '../hooks/useAutosave';
 import { useRealtimeDoc } from '../hooks/useRealtimeDoc';
@@ -18,14 +18,14 @@ export default function DocumentPage() {
   const [showVersions, setShowVersions] = useState(false);
   const { data: document, isLoading } = useQuery({
     queryKey: ['document', documentId],
-    queryFn: () => axios.get(`/documents/${documentId}`).then((r) => r.data),
+    queryFn: () => api.get(`/documents/${documentId}`).then((r) => r.data),
   });
 
   const { scheduleSave, isSaving } = useAutosave(documentId);
   useRealtimeDoc(documentId, document?.project_id,editorRef);
 
   const titleMutation = useMutation({
-    mutationFn: (title) => axios.patch(`/documents/${documentId}`, { title }).then((r) => r.data),
+    mutationFn: (title) => api.patch(`/documents/${documentId}`, { title }).then((r) => r.data),
     onSuccess: (updatedDoc) => queryClient.setQueryData(['document', documentId], updatedDoc),
   });
 

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, FileText, MoreHorizontal, Trash2, Pencil } from 'lucide-react';
-import axios from '../api/axios';
+import api from '../api/axios';
 import NotificationBell from './notifications/NotificationBell';
 
 export default function DocumentsSidebar({ projectId }) {
@@ -16,13 +16,13 @@ export default function DocumentsSidebar({ projectId }) {
 
   const { data: documents, isLoading } = useQuery({
     queryKey: ['documents', projectId],
-    queryFn: () => axios.get(`/projects/${projectId}/documents`).then((r) => r.data),
+    queryFn: () => api.get(`/projects/${projectId}/documents`).then((r) => r.data),
   });
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['documents', projectId] });
 
   const createMutation = useMutation({
-    mutationFn: () => axios.post(`/projects/${projectId}/documents`, { title: 'Untitled' }).then((r) => r.data),
+    mutationFn: () => api.post(`/projects/${projectId}/documents`, { title: 'Untitled' }).then((r) => r.data),
     onSuccess: (doc) => {
       invalidate();
       navigate(`/projects/${projectId}/documents/${doc.id}`);
@@ -30,12 +30,12 @@ export default function DocumentsSidebar({ projectId }) {
   });
 
   const renameMutation = useMutation({
-    mutationFn: ({ id, title }) => axios.patch(`/documents/${id}`, { title }),
+    mutationFn: ({ id, title }) => api.patch(`/documents/${id}`, { title }),
     onSuccess: () => { invalidate(); setRenamingId(null); },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => axios.delete(`/documents/${id}`),
+    mutationFn: (id) => api.delete(`/documents/${id}`),
     onSuccess: (_data, deletedId) => {
       invalidate();
       // If the doc being deleted is the one currently open, navigate away —

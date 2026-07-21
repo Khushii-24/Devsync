@@ -3,7 +3,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTaskPanelStore } from '../stores/taskPanelStore';
 import TaskDetailPanel from './board/TaskDetailPanel';
-import axios from '../api/axios';
+import api from '../api/axios';
 
 // Bridges the global store to the existing prop-driven panel. Reuses
 // Week 2's ['tasks', projectId] cache to look up the full task object —
@@ -23,14 +23,14 @@ export default function TaskDetailPanelHost() {
   // 2. Fallback fetch: fetch single task if not found in cache
   const { data: fetchedTask, isLoading } = useQuery({
     queryKey: ['task', openTaskId],
-    queryFn: () => axios.get(`/tasks/${openTaskId}`).then((r) => r.data),
+    queryFn: () => api.get(`/tasks/${openTaskId}`).then((r) => r.data),
     enabled: !!openTaskId && !cachedTask,
   });
 
   // 3. Project fetch: get project details to resolve workspaceId if missing
   const { data: project } = useQuery({
     queryKey: ['project', projectId],
-    queryFn: () => axios.get(`/projects/${projectId}`).then((r) => r.data),
+    queryFn: () => api.get(`/projects/${projectId}`).then((r) => r.data),
     enabled: !!projectId && !workspaceId,
   });
 

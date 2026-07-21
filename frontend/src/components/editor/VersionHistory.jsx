@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { diffWords } from 'diff';
-import axios from '../../api/axios';
+import api from '../../api/axios';
 import { docToText } from '../../lib/docToText';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -13,7 +13,7 @@ export default function VersionHistory({ documentId, currentContent, onClose, on
 
   const { data: versions, isLoading } = useQuery({
     queryKey: ['document-versions', documentId],
-    queryFn: () => axios.get(`/documents/${documentId}/versions`).then((r) => r.data),
+    queryFn: () => api.get(`/documents/${documentId}/versions`).then((r) => r.data),
   });
 
   // Fetches full content only for the version being previewed — list view
@@ -21,12 +21,12 @@ export default function VersionHistory({ documentId, currentContent, onClose, on
   // is a separate on-demand fetch, not wasted bandwidth for rows never opened.
   const { data: selectedVersion } = useQuery({
     queryKey: ['document-version', documentId, selectedVersionId],
-    queryFn: () => axios.get(`/documents/${documentId}/versions/${selectedVersionId}`).then((r) => r.data),
+    queryFn: () => api.get(`/documents/${documentId}/versions/${selectedVersionId}`).then((r) => r.data),
     enabled: !!selectedVersionId,
   });
 
   const rollbackMutation = useMutation({
-    mutationFn: (versionId) => axios.post(`/documents/${documentId}/rollback/${versionId}`).then((r) => r.data),
+    mutationFn: (versionId) => api.post(`/documents/${documentId}/rollback/${versionId}`).then((r) => r.data),
     onSuccess: (updatedDoc) => {
       // Update local cache directly rather than waiting on the WS event —
       // Day 5's useRealtimeDoc skips self-triggered events by design, so

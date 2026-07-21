@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
-import axios from "../../api/axios";
+import api from "../../api/axios";
 import { CalendarDays, Loader2, RefreshCw, CheckCircle2, AlertTriangle, Trophy } from "lucide-react";
 
 export default function WeeklyDigest({ projectId }) {
@@ -9,7 +9,7 @@ export default function WeeklyDigest({ projectId }) {
 
     const generateDigest = useMutation({
         mutationFn: async () => {
-            const { data } = await axios.post("/ai/digest", { project_id: projectId });
+            const { data } = await api.post("/ai/digest", { project_id: projectId });
             return data;
         },
         onSuccess: (data) => setDigest(data),

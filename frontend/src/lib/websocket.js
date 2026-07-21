@@ -12,7 +12,9 @@ class WebSocketManager {
   }
 
   connect(projectId, token) {
-    this.url = `${import.meta.env.VITE_WS_URL}/ws/projects/${projectId}?token=${token}`;
+    const rawWsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:8000";
+    const baseWsUrl = rawWsUrl.endsWith("/api/v1") ? rawWsUrl : `${rawWsUrl.replace(/\/+$/, '')}/api/v1`;
+    this.url = `${baseWsUrl}/ws/projects/${projectId}?token=${token}`;
     this.shouldReconnect = true;
     this._openSocket();
   }

@@ -2,7 +2,7 @@
 
 import { useRef, useCallback, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from '../api/axios';
+import api from '../api/axios';
 
 export function useAutosave(documentId) {
   const queryClient = useQueryClient();
@@ -11,7 +11,7 @@ export function useAutosave(documentId) {
 
   const mutation = useMutation({
     mutationFn: (content) =>
-      axios.patch(`/documents/${documentId}`, { content }).then((r) => r.data),
+      api.patch(`/documents/${documentId}`, { content }).then((r) => r.data),
     onSuccess: (updatedDoc) => {
       
       queryClient.setQueryData(['document', documentId], updatedDoc);
@@ -46,7 +46,7 @@ export function useAutosave(documentId) {
       
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (pendingContentRef.current !== null) {
-        axios.patch(`/documents/${documentId}`, { content: pendingContentRef.current });
+        api.patch(`/documents/${documentId}`, { content: pendingContentRef.current });
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

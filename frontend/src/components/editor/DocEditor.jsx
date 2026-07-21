@@ -7,7 +7,7 @@ import Mention from '@tiptap/extension-mention';
 import { ReactRenderer } from '@tiptap/react';
 import tippy from 'tippy.js';
 import MentionList from './MentionList';
-import axios from '../../api/axios';
+import api from '../../api/axios';
 import { TaskChip } from './TaskChipExtension';
 import { forwardRef, useImperativeHandle } from 'react';
 import { useRef } from 'react';
@@ -15,7 +15,7 @@ import { useEffect } from 'react';
 function buildMentionSuggestion(workspaceId) {
   return {
     items: async ({ query }) => {
-      const { data } = await axios.get(`/workspaces/${workspaceId}/members`);
+      const { data } = await api.get(`/workspaces/${workspaceId}/members`);
       return data
         .filter((m) => m.username.toLowerCase().includes(query.toLowerCase()))
         .slice(0, 5);
@@ -74,7 +74,7 @@ const DocEditor = forwardRef(function DocEditor(
       }),
       console.log("PROJECT ID:", projectId),
       TaskChip.configure({
-  fetchProjectTasks: () => axios.get(`/projects/${projectId}/tasks`),
+  fetchProjectTasks: () => api.get(`/projects/${projectId}/tasks`),
   projectId,
   workspaceId,
 }),

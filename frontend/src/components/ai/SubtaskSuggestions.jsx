@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "../../api/axios"; // ASSUMPTION: matches your existing Axios instance path
+import api from "../../api/axios"; // ASSUMPTION: matches your existing Axios instance path
 import { X, Loader2, Sparkles, Trash2 } from "lucide-react";
 
 export default function SubtaskSuggestions({ task, projectId, columnId, onClose }) {
@@ -14,7 +14,7 @@ export default function SubtaskSuggestions({ task, projectId, columnId, onClose 
         setIsDecomposing(true);
         setDecomposeError(null);
         try {
-            const { data } = await axios.post("/ai/decompose", { task_id: task.id });
+            const { data } = await api.post("/ai/decompose", { task_id: task.id });
             // Give each suggestion a stable local id for React keys + edit tracking
             setSuggestions(data.subtasks.map((s, i) => ({ ...s, _localId: `s-${i}` })));
         } catch (err) {
@@ -44,7 +44,7 @@ export default function SubtaskSuggestions({ task, projectId, columnId, onClose 
             // does coalesce(max,-1)+1 server-side — safe to fire concurrently.
             return Promise.all(
                 subtasksToCreate.map((s) =>
-                    axios.post("/tasks", {
+                    api.post("/tasks", {
                         column_id: columnId,
                         title: s.title,
                         description: s.description,
