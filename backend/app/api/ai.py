@@ -16,10 +16,11 @@ from app.core.digest import build_digest_input
 from app.api.deps import get_project_or_404  
 from app.core.ai_prompts import DECOMPOSE_SYSTEM_PROMPT, DIGEST_SYSTEM_PROMPT
 from pydantic import ValidationError
+from app.core.config import settings
 router = APIRouter()
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "llama3.2:3b"
+OLLAMA_URL = f"{settings.OLLAMA_URL.rstrip('/')}/api/generate"
+OLLAMA_MODEL = settings.OLLAMA_MODEL
 
 
 class ChatRequest(BaseModel):
