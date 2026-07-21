@@ -16,18 +16,26 @@ async def lifespan(app: FastAPI):
     listener_task.cancel()
 
 
+import os
+
 app = FastAPI(
     title="DevSync API",
     version="0.1.0",
     lifespan=lifespan,
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
+cors_origins_env = os.getenv("CORS_ORIGINS", "")
+if cors_origins_env:
+    origins = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
+else:
+    origins = [
         "http://localhost:5173",
         "https://devsync-neon.vercel.app",
-    ],
+    ]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
