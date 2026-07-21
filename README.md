@@ -4,6 +4,23 @@
 
 ---
 
+## 🌐 Live Deployments
+
+* **Frontend (Vercel)**: [https://devsync-neon.vercel.app](https://devsync-neon.vercel.app)
+* **Backend API (Render)**: [https://devsync-2saa.onrender.com](https://devsync-2saa.onrender.com)
+
+---
+
+## 🚀 Live Demo Access
+
+You can access the live system immediately without registration using the following credentials:
+* **Demo Login**: [https://devsync-neon.vercel.app/login](https://devsync-neon.vercel.app/login)
+* **Email**: `demo@devsync.io`
+* **Password**: `password123`
+* **Role**: Owner (Quantum Product Suite)
+
+---
+
 ## ✨ Key Features
 
 - **⚡ Real-Time Board Sync**: Instant drag-and-drop task movements across custom columns, synchronized live across all active project members using WebSockets.
@@ -36,6 +53,15 @@
 
 ---
 
+## 🤖 AI Assistant & Ollama Deployment Note
+
+Due to resource, CPU/GPU, and timeout limitations on Render's free tier, the **Ollama LLM Server is not deployed to the cloud**. 
+
+* **Local Development**: The project integrates locally with Ollama (defaulting to `http://localhost:11434` with the `llama3.2:3b` model) using Docker Compose.
+* **Production Sandbox**: Since Ollama runs locally, live text generation services (Weekly Digest, Subtask Suggestions, Code Explainer) will return a graceful "AI Service Unavailable" message if Ollama isn't configured on the hosting platform. However, all RAG documents and task descriptions are pre-embedded and seeded directly into the `chunks` table, so search functionalities remain fully queryable.
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -62,8 +88,8 @@ poetry install
 # Run database migrations
 poetry run alembic upgrade head
 
-# Seed test data (creates users alex_morgan, sarah_chen, david_kim, etc. with password 'password123')
-poetry run python seed_test_data.py
+# Seed test data (creates demo accounts, tasks, documents, and RAG embeddings)
+poetry run python scripts/seed.py
 
 # Start the FastAPI backend server
 poetry run uvicorn app.main:app --reload
@@ -90,14 +116,13 @@ npm run dev
 
 ## 👥 Seeded Test Credentials
 
-You can log into the local environment using any of the following seeded user accounts:
+You can log into the application using any of the following seeded user accounts:
 
 | Email | Username | Default Password | Role |
 |---|---|---|---|
-| `alex_morgan@devsync.com` | `alex_morgan` | `password123` | Owner |
-| `sarah_chen@devsync.com` | `sarah_chen` | `password123` | Admin |
-| `david_kim@devsync.com` | `david_kim` | `password123` | Member |
-| `marcus_vance@devsync.com` | `marcus_vance` | `password123` | Member |
+| `demo@devsync.io` | `demo_user` | `password123` | Owner |
+| `sarah.chen@devsync.io` | `sarah_chen` | `password123` | Admin |
+| `marcus.vance@devsync.io` | `marcus_vance` | `password123` | Member |
 
 ---
 
@@ -112,7 +137,8 @@ Devsync/
 │   │   ├── core/             # Auth, security, activity log & WebSocket manager
 │   │   ├── models/           # SQLAlchemy database models
 │   │   └── schemas/          # Pydantic request/response schemas
-│   └── seed_test_data.py     # Database seed script
+│   └── scripts/
+│       └── seed.py           # Database seed script (idempotent, supports embeddings)
 │
 └── frontend/
     ├── src/
@@ -121,7 +147,8 @@ Devsync/
     │   ├── hooks/            # TanStack Query custom hooks
     │   ├── pages/            # Page views (Landing, Dashboard, Settings, Trash, Audit Log)
     │   └── stores/           # Zustand state stores (auth, theme, toast, task panel)
-    ├── index.css             # Tailwind v4 theme configuration & CSS variables
+    ├── index.css             # Tailwind theme configuration & CSS variables
+    ├── vercel.json           # Client routing rewrites for Vercel
     └── main.jsx              # React app entrypoint with RootErrorBoundary
 ```
 
