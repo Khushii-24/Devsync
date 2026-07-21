@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = '7f4ca6bbd70c'
-down_revision: Union[str, Sequence[str], None] = 'xxxx_add_activity_logs'
+down_revision: Union[str, Sequence[str], None] = '76af722f9a74'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -44,7 +44,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_notifications_project_id'), 'notifications', ['project_id'], unique=False)
     op.create_index(op.f('ix_notifications_recipient_id'), 'notifications', ['recipient_id'], unique=False)
     op.create_index(op.f('ix_notifications_workspace_id'), 'notifications', ['workspace_id'], unique=False)
-    op.drop_index(op.f('ix_chunks_embedding'), table_name='chunks', postgresql_ops={'embedding': 'vector_cosine_ops'}, postgresql_with={'lists': '100'}, postgresql_using='ivfflat')
+    op.drop_index(op.f('ix_chunks_embedding'), table_name='chunks', postgresql_ops={'embedding': 'vector_cosine_ops'}, postgresql_with={'lists': '100'}, postgresql_using='ivfflat', if_exists=True)
     op.alter_column('document_versions', 'created_at',
                existing_type=postgresql.TIMESTAMP(timezone=True),
                nullable=False,
@@ -56,13 +56,9 @@ def upgrade() -> None:
     op.alter_column('documents', 'updated_at',
                existing_type=postgresql.TIMESTAMP(timezone=True),
                nullable=False)
-    op.drop_index(op.f('ix_documents_content_gin'), table_name='documents', postgresql_using='gin')
-    op.create_index(op.f('ix_documents_project_id'), 'documents', ['project_id'], unique=False)
-    op.create_index(op.f('ix_documents_workspace_id'), 'documents', ['workspace_id'], unique=False)
-    op.drop_constraint(op.f('documents_project_id_fkey'), 'documents', type_='foreignkey')
-    op.drop_constraint(op.f('fk_documents_workspace'), 'documents', type_='foreignkey')
-    op.create_foreign_key(None, 'documents', 'workspaces', ['workspace_id'], ['id'], ondelete='CASCADE')
-    op.create_foreign_key(None, 'documents', 'projects', ['project_id'], ['id'], ondelete='CASCADE')
+    op.drop_index(op.f('ix_documents_content_gin'), table_name='documents', postgresql_using='gin', if_exists=True)
+    op.create_index(op.f('ix_documents_project_id'), 'documents', ['project_id'], unique=False, if_not_exists=True)
+    op.create_index(op.f('ix_documents_workspace_id'), 'documents', ['workspace_id'], unique=False, if_not_exists=True)
     # ### end Alembic commands ###
 
 

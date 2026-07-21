@@ -8,7 +8,7 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
-revision = "xxxx_add_activity_logs"
+revision = "76af722f9a74"
 down_revision = "42b6f63f6103"  # ASSUMPTION: fill in from `poetry run alembic history`
 branch_labels = None
 depends_on = None

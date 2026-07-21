@@ -36,10 +36,7 @@ def upgrade() -> None:
     op.add_column('documents', sa.Column('workspace_id', sa.UUID(), nullable=False))
     op.add_column('documents', sa.Column('is_deleted', sa.Boolean(), nullable=False))
     op.add_column('documents', sa.Column('created_by', sa.UUID(), nullable=False))
-    op.alter_column('documents', 'content',
-               existing_type=sa.TEXT(),
-               type_=postgresql.JSONB(astext_type=sa.Text()),
-               nullable=False)
+    op.execute("ALTER TABLE documents ALTER COLUMN content TYPE JSONB USING CASE WHEN content IS NULL OR content = '' THEN '{}'::jsonb ELSE content::jsonb END")
     op.alter_column('documents', 'created_at',
                existing_type=postgresql.TIMESTAMP(timezone=True),
                nullable=False,
