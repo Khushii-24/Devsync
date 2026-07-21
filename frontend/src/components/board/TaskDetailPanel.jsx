@@ -8,6 +8,9 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import CodeExplainer from '../ai/CodeExplainer';
+import { PresenceAvatars } from './PresenceAvatars';
+import { toast } from '../../stores/toastStore';
+
 const PRIORITIES = ['low', 'medium', 'high', 'urgent'];
 
 function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
@@ -50,58 +53,42 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
     }
   }, [showPreview, editor]);
 
-
-  const confirmDelete = () => {
-    deleteMutation.mutate(task.id, {
-      onSuccess: () => {
-        setShowConfirm(false);
-        onClose();
-      },
-    });
-  };
-
   useEffect(() => {
-  if (!task) return;
+    if (!task) return;
 
-  setShowBreakdown(false);
-  setTitle((prev) =>
-    prev !== (task.title ?? '') ? task.title ?? '' : prev
-  );
-  setDescription((prev) => {
-    const next = task.description ?? "";
-    if (prev !== next) {
-      if (editor && editor.getHTML() !== next) {
-        editor.commands.setContent(next);
+    setShowBreakdown(false);
+    setTitle((prev) =>
+      prev !== (task.title ?? '') ? task.title ?? '' : prev
+    );
+    setDescription((prev) => {
+      const next = task.description ?? "";
+      if (prev !== next) {
+        if (editor && editor.getHTML() !== next) {
+          editor.commands.setContent(next);
+        }
+        return next;
       }
-      return next;
-    }
-    return prev;
-  });
-  setAssigneeId((prev) =>
-    prev !== (task.assignee_id ?? "") ? task.assignee_id ?? "" : prev
-  );
-  setDueDate((prev) =>
-    prev !== (task.due_date ?? "") ? task.due_date ?? "" : prev
-  );
-  setPriority((prev) =>
-    prev !== (task.priority ?? "medium") ? task.priority ?? "medium" : prev
-  );
-  setLabels((prev) => {
-    const next = task.labels ?? [];
-    return JSON.stringify(prev) !== JSON.stringify(next) ? next : prev;
-  });
-}, [task?.id]);
-
-  // Generic autosave helper — every field calls this on blur (text fields) or
-  // onChange (select/date, since there's no meaningful "blur" moment for those).
-  function saveField(field, value) {
-    updateTask.mutate({ taskId: task.id, [field]: value });
-  }
+      return prev;
+    });
+    setAssigneeId((prev) =>
+      prev !== (task.assignee_id ?? "") ? task.assignee_id ?? "" : prev
+    );
+    setDueDate((prev) =>
+      prev !== (task.due_date ?? "") ? task.due_date ?? "" : prev
+    );
+    setPriority((prev) =>
+      prev !== (task.priority ?? "medium") ? task.priority ?? "medium" : prev
+    );
+    setLabels((prev) => {
+      const next = task.labels ?? [];
+      return JSON.stringify(prev) !== JSON.stringify(next) ? next : prev;
+    });
+  }, [task?.id]);
 
   function addLabel(e) {
     e.preventDefault();
     const trimmed = labelInput.trim();
-    if (!trimmed || labels.includes(trimmed)) return; // no empty or duplicate labels
+    if (!trimmed || labels.includes(trimmed)) return;
     const next = [...labels, trimmed];
     setLabels(next);
     setLabelInput('');
@@ -112,6 +99,24 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
     const next = labels.filter((l) => l !== label);
     setLabels(next);
     saveField('labels', next);
+  }
+
+  function saveField(field, value) {
+    if (!task?.id) return;
+    updateTask.mutate({ taskId: task.id, [field]: value }, {
+      onSuccess: () => toast.success(`Task ${field.replace('_', ' ')} updated`),
+    });
+  }
+
+  function confirmDelete() {
+    if (!task?.id) return;
+    deleteMutation.mutate(task.id, {
+      onSuccess: () => {
+        toast.success("Task deleted");
+        setShowConfirm(false);
+        onClose();
+      },
+    });
   }
 
   if (!task) return null;
@@ -135,9 +140,23 @@ function TaskDetailPanel({ task, projectId, workspaceId, isOpen, onClose }) {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
-            className="fixed right-0 top-0 h-full w-full sm:w-[420px] bg-white dark:bg-gray-900 border-l border-gray-100 dark:border-gray-850 shadow-xl z-50 overflow-y-auto text-gray-900 dark:text-gray-100"
+            className="fixed right-0 top-0 h-full w-full sm:w-[420px] bg-white dark:bg-gray-900 border-l border-gray-100 dark:border-gray-850 shadow-xl z-50 overflow-y-auto text-gray-900 dark:text-gray-100 font-sans"
           >
             <div className="p-5 flex flex-col gap-5">
+              
+              {/* Top Bar with Presence System */}
+              <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Viewing task</span>
+                  {workspaceId && <PresenceAvatars workspaceId={workspaceId} />}
+                </div>
+                <button
+                  onClick={onClose}
+                  className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors text-xs font-semibold"
+                >
+                  Close ✕
+                </button>
+              </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-gray-400 uppercase tracking-wide">Task Details</span>
                 <div className="flex items-center gap-3">

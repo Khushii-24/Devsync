@@ -21,7 +21,7 @@ router = APIRouter(tags=["tasks"])
 
 
 def get_task_or_404(task_id: UUID, db: Session) -> Task:
-    task = db.query(Task).filter(Task.id == task_id).first()
+    task = db.query(Task).filter(Task.id == task_id, Task.deleted_at.is_(None)).first()
     if not task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
     return task
@@ -100,7 +100,7 @@ def list_tasks(
     # on the array it receives and each group is already correctly sorted — no client-side sort needed
     return (
         db.query(Task)
-        .filter(Task.project_id == project_id)
+        .filter(Task.project_id == project_id, Task.deleted_at.is_(None))
         .order_by(Task.column_id, Task.position)
         .all()
     )
@@ -129,7 +129,7 @@ async def reorder_tasks(
 
     task_ids = [item.task_id for item in payload.tasks]
 
-    tasks = db.query(Task).filter(Task.id.in_(task_ids)).all()
+    tasks = db.query(Task).filter(Task.id.in_(task_ids), Task.deleted_at.is_(None)).all()
     tasks_by_id = {t.id: t for t in tasks}
 
     if len(tasks_by_id) != len(task_ids):
@@ -181,7 +181,7 @@ async def reorder_tasks(
                 payload={
                     "task_title": task.title,
                     "column_name": new_column.name,
-                    "actor_name": current_user.name or current_user.username
+                    "actor_name": current_user.username
                 }
             )
 
@@ -278,7 +278,7 @@ async def update_task(
             type=NotificationType.ASSIGNED,
             payload={
                 "task_title": task.title,
-                "actor_name": current_user.name or current_user.username
+                "actor_name": current_user.username
             }
         )
 
@@ -301,7 +301,7 @@ async def update_task(
                     payload={
                         "task_title": task.title,
                         "column_name": new_column.name,
-                        "actor_name": current_user.name or current_user.username
+                        "actor_name": current_user.username
                     }
                 )
 
@@ -338,6 +338,7 @@ async def delete_task(
     require_workspace_member(project.workspace_id, current_user, db)
 
     project_id = project.id
+    task.deleted_at = func.now()
     log_activity(
         db,
         workspace_id=task.project.workspace_id,
@@ -345,11 +346,9 @@ async def delete_task(
         task_id=task.id,
         actor_id=current_user.id,
         event_type=ActivityEventType.TASK_DELETED,
-        event_data={"title": task.title},  # snapshot title since task row won't exist to look it up later
+        event_data={"title": task.title},
     )
     delete_embeddings(db, source_type="task", source_id=task_id)
-
-    db.delete(task)
     db.commit()
 
     event = build_event("task.deleted", str(project_id), {"task_id": str(task_id)}, current_user.id)
@@ -357,5 +356,43 @@ async def delete_task(
         await manager.publish(str(project_id), event)
     except Exception:
         logger.exception("Failed to publish task.deleted event")
+
+
+@router.post("/tasks/{task_id}/restore", response_model=TaskResponse)
+async def restore_task(
+    task_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    task = db.query(Task).filter(Task.id == task_id, Task.deleted_at.isnot(None)).first()
+    if not task:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Archived task not found")
+
+    project = db.query(Project).filter(Project.id == task.project_id, Project.deleted_at.is_(None)).first()
+    if not project:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot restore task belonging to an archived project")
+
+    require_workspace_member(project.workspace_id, current_user, db)
+
+    task.deleted_at = None
+    log_activity(
+        db,
+        workspace_id=project.workspace_id,
+        project_id=project.id,
+        task_id=task.id,
+        actor_id=current_user.id,
+        event_type=ActivityEventType.TASK_RESTORED,
+        event_data={"title": task.title},
+    )
+    db.commit()
+    db.refresh(task)
+
+    event = build_event("task.created", str(project.id), TaskResponse.model_validate(task).model_dump(mode="json"), current_user.id)
+    try:
+        await manager.publish(str(project.id), event)
+    except Exception:
+        logger.exception("Failed to publish task.restored event")
+
+    return task
 
 

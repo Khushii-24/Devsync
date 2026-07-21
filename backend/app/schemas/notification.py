@@ -1,3 +1,4 @@
+from uuid import UUID
 from datetime import datetime
 from pydantic import BaseModel
 
@@ -5,11 +6,11 @@ from app.models.notification import NotificationType
 
 
 class NotificationOut(BaseModel):
-    id: str
-    actor_id: str | None
+    id: UUID
+    actor_id: UUID | None
     type: NotificationType
     payload: dict
-    task_id: str | None
+    task_id: UUID | None
     is_read: bool
     created_at: datetime
 

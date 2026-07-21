@@ -10,26 +10,46 @@ import {
   Trash2,
   Plus,
   X,
-  BarChart2
+  BarChart2,
+  Settings,
+  Shield,
+  User as UserIcon,
+  LogOut,
+  ChevronDown,
+  LayoutGrid,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useProjects, useUpdateProject, useDeleteProject } from '../../hooks/useProjects';
+import { useWorkspaces } from '../../hooks/useWorkspaces';
+import { useAuthStore } from '../../stores/auth.store';
+import { useThemeStore } from '../../stores/themeStore';
 import CreateProjectModal from '../projects/CreateProjectModal';
+import CreateWorkspaceModal from '../projects/CreateWorkspaceModal';
+import SlidingWorkspacePanel from '../SlidingWorkspacePanel';
 
 function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
   const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
+  const { theme, toggleTheme } = useThemeStore();
+  const { data: workspaces } = useWorkspaces();
   const { data: projects, isLoading } = useProjects(workspaceId);
   const updateProjectMutation = useUpdateProject(activeProjectId, workspaceId);
   const deleteProjectMutation = useDeleteProject(workspaceId);
 
   // Modals / Dialog states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isCreateWorkspaceOpen, setIsCreateWorkspaceOpen] = useState(false);
   const [projectToRename, setProjectToRename] = useState(null);
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [menuOpenProjectId, setMenuOpenProjectId] = useState(null);
+  const [workspaceDropdownOpen, setWorkspaceDropdownOpen] = useState(false);
 
   // Form states for renaming
   const [renameName, setRenameName] = useState('');
   const [renameDesc, setRenameDesc] = useState('');
+
+  const activeWorkspace = workspaces?.find((w) => w.id === workspaceId);
 
   const handleOpenRename = (p) => {
     setProjectToRename(p);
@@ -57,11 +77,10 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
 
     deleteProjectMutation.mutate(projectToDelete.id, {
       onSuccess: () => {
-        // If we deleted the active project, find another project to redirect to
         if (projectToDelete.id === activeProjectId) {
           const remaining = projects?.filter((p) => p.id !== projectToDelete.id);
           if (remaining && remaining.length > 0) {
-            navigate(`/projects/${remaining[0].id}/board`);
+            navigate(`/workspaces/${workspaceId}/projects/${remaining[0].id}/board`);
           } else {
             navigate('/dashboard');
           }
@@ -71,23 +90,58 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
     });
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const userInitials = (user?.username || 'US').slice(0, 2).toUpperCase();
+
   return (
     <div className="w-64 shrink-0 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col h-full font-sans select-none text-gray-900 dark:text-gray-100">
-      {/* Workspace Header */}
-      <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-            D
+      
+      {/* Workspace Switcher Header */}
+      <div className="relative p-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
+        <button
+          onClick={() => setWorkspaceDropdownOpen(true)}
+          className="w-full flex items-center justify-between p-2 rounded-lg border border-gray-150 dark:border-gray-850 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-left group"
+        >
+          <div className="flex items-center gap-2.5 truncate">
+            <div className="w-7 h-7 rounded-md bg-indigo-600 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm group-hover:bg-indigo-700 transition-colors">
+              {activeWorkspace?.name?.slice(0, 2).toUpperCase() || 'WS'}
+            </div>
+            <div className="truncate">
+              <div className="text-xs font-semibold text-gray-900 dark:text-gray-100 leading-tight truncate">
+                {activeWorkspace?.name || 'Loading...'}
+              </div>
+              <div className="text-[10px] text-gray-400">Click to switch</div>
+            </div>
           </div>
-          <div>
-            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-tight">Devsync</div>
-            <div className="text-xs text-gray-400">Workspace</div>
-          </div>
-        </div>
+          <ChevronDown size={14} className="text-gray-400 group-hover:text-indigo-600 transition-colors" />
+        </button>
+
+        <SlidingWorkspacePanel
+          isOpen={workspaceDropdownOpen}
+          onClose={() => setWorkspaceDropdownOpen(false)}
+          activeWorkspaceId={workspaceId}
+          onSelectWorkspace={(wId) => {
+            navigate(`/dashboard?workspace=${wId}`);
+          }}
+        />
       </div>
 
       {/* Projects Section */}
       <div className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-6">
+        
+        {/* Navigation Shortcut */}
+        <Link
+          to="/dashboard"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
+        >
+          <LayoutGrid size={16} className="text-gray-400" />
+          <span>Dashboard</span>
+        </Link>
+
         <div>
           <div className="flex items-center justify-between px-2 mb-2">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Projects</span>
@@ -125,7 +179,7 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
                         }`}
                     >
                       <Link
-                        to={`/projects/${p.id}/board`}
+                        to={`/workspaces/${workspaceId}/projects/${p.id}/board`}
                         className="flex-1 flex items-center gap-2.5 truncate"
                       >
                         <Folder size={16} className={isActive ? 'text-indigo-600' : 'text-gray-400'} />
@@ -142,7 +196,7 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
 
                         <button
                           onClick={() => setMenuOpenProjectId(menuOpenProjectId === p.id ? null : p.id)}
-                          className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-gray-200 dark:hover:bg-gray-850 rounded text-gray-400 hover:text-gray-600 transition-all"
+                          className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-gray-200 dark:hover:bg-gray-850 rounded text-gray-400 hover:text-gray-650 transition-all"
                         >
                           <MoreVertical size={14} />
                         </button>
@@ -174,21 +228,21 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
                     {isActive && (
                       <div className="pl-8 pr-3 mt-1 space-y-1">
                         <Link
-                          to={`/projects/${p.id}/board`}
+                          to={`/workspaces/${workspaceId}/projects/${p.id}/board`}
                           className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
                         >
                           <Columns size={12} />
                           <span>Board</span>
                         </Link>
                         <Link
-                          to={`/projects/${p.id}/documents`}
+                          to={`/workspaces/${workspaceId}/projects/${p.id}/documents`}
                           className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
                         >
                           <FileText size={12} />
                           <span>Documents</span>
                         </Link>
                         <Link
-                          to={`/projects/${p.id}/analytics`}
+                          to={`/workspaces/${workspaceId}/projects/${p.id}/analytics`}
                           className="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
                         >
                           <BarChart2 size={12} />
@@ -202,28 +256,63 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
             </div>
           )}
         </div>
+        
+        {/* Workspace Settings, Archive & Audit Log shortcuts */}
+        {workspaceId && (
+          <div className="mt-auto space-y-1">
+            <Link
+              to={`/workspaces/${workspaceId}/audit-log`}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-amber-500 dark:hover:text-amber-400 transition-colors"
+            >
+              <Shield size={16} />
+              <span>Audit Log</span>
+            </Link>
+            <Link
+              to={`/workspaces/${workspaceId}/archive`}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+            >
+              <Trash2 size={16} />
+              <span>Archive & Trash</span>
+            </Link>
+            <Link
+              to={`/workspaces/${workspaceId}/settings`}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+            >
+              <Settings size={16} />
+              <span>Workspace Settings</span>
+            </Link>
+          </div>
+        )}
       </div>
 
-      {/* Members Section */}
-      <div className="p-4 border-t border-gray-105 dark:border-gray-800 flex-shrink-0">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Members</span>
-        </div>
-        <div className="flex -space-x-1.5 overflow-hidden">
-          {members?.slice(0, 6).map((m) => (
-            <div
-              key={m.user_id}
-              title={m.name || m.email}
-              className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-950 border-2 border-white dark:border-gray-900 text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center justify-center shrink-0 shadow-sm"
-            >
-              {(m.name || m.email).slice(0, 2).toUpperCase()}
-            </div>
-          ))}
-          {members?.length > 6 && (
-            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 border-2 border-white dark:border-gray-900 text-xs font-bold text-gray-600 dark:text-gray-400 flex items-center justify-center shrink-0 shadow-sm">
-              +{members.length - 6}
-            </div>
-          )}
+      {/* User settings & logout Footer */}
+      <div className="p-3 border-t border-gray-105 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-gray-950/20 shrink-0">
+        <Link to="/profile" className="flex items-center gap-2 hover:opacity-85 transition-opacity min-w-0">
+          <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-sm border-2 border-indigo-200 dark:border-indigo-900">
+            {userInitials}
+          </div>
+          <div className="min-w-0 max-w-[100px]">
+            <div className="text-xs font-semibold text-gray-950 dark:text-white truncate">{user?.username}</div>
+            <div className="text-[10px] text-gray-400 truncate">{user?.email}</div>
+          </div>
+        </Link>
+        
+        <div className="flex items-center gap-1">
+          <button
+            onClick={toggleTheme}
+            className="p-1.5 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            title={theme === 'dark' ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
+          
+          <button
+            onClick={handleLogout}
+            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors"
+            title="Sign Out"
+          >
+            <LogOut size={16} />
+          </button>
         </div>
       </div>
 
@@ -232,7 +321,14 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
         workspaceId={workspaceId}
-        onCreated={(project) => navigate(`/projects/${project.id}/board`)}
+        onCreated={(project) => navigate(`/workspaces/${workspaceId}/projects/${project.id}/board`)}
+      />
+
+      {/* Create Workspace Modal */}
+      <CreateWorkspaceModal
+        isOpen={isCreateWorkspaceOpen}
+        onClose={() => setIsCreateWorkspaceOpen(false)}
+        onCreated={(workspace) => navigate(`/dashboard?workspace=${workspace.id}`)}
       />
 
       {/* Rename Modal */}
@@ -295,7 +391,7 @@ function WorkspaceSidebar({ workspaceId, activeProjectId, members }) {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-850 rounded-xl p-6 w-full max-w-sm shadow-xl border border-gray-100 dark:border-gray-700 text-center text-gray-900 dark:text-gray-100">
             <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">Delete Project</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">
+            <p className="text-xs text-gray-505 dark:text-gray-400 mb-6">
               Are you sure you want to delete <strong>{projectToDelete.name}</strong>? This action is permanent and will delete all associated columns, tasks, and documents.
             </p>
             <div className="flex justify-center gap-3">

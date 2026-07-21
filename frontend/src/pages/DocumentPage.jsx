@@ -9,6 +9,8 @@ import { useAutosave } from '../hooks/useAutosave';
 import { useRealtimeDoc } from '../hooks/useRealtimeDoc';
 import { useState } from 'react';
 import VersionHistory from '../components/editor/VersionHistory';
+import Breadcrumbs from '../components/board/Breadcrumbs';
+
 export default function DocumentPage() {
   const { documentId } = useParams();
   const queryClient = useQueryClient();
@@ -30,7 +32,10 @@ export default function DocumentPage() {
   if (isLoading) return <div className="p-8 text-gray-400">Loading...</div>;
 
   return (
-    <div className="max-w-3xl mx-auto py-8">
+    <div className="max-w-3xl mx-auto py-8 px-4">
+      <div className="mb-4">
+        <Breadcrumbs />
+      </div>
       <div className="flex items-center justify-between mb-4">
         <input
           defaultValue={document.title}

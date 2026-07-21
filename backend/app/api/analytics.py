@@ -5,7 +5,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select, case
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.core.dependencies import get_current_user
@@ -28,7 +28,7 @@ router = APIRouter(prefix="/projects/{project_id}/analytics", tags=["analytics"]
 async def get_velocity(
     project_id: str,
     days: int = Query(30, ge=1, le=180),
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     since = datetime.utcnow() - timedelta(days=days)
@@ -88,7 +88,7 @@ async def get_velocity(
 @router.get("/by-assignee", response_model=AssigneeResponse)
 async def get_by_assignee(
     project_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     done_col_subq = (
@@ -129,7 +129,7 @@ async def get_by_assignee(
 @router.get("/cycle-time", response_model=CycleTimeResponse)
 async def get_cycle_time(
     project_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     moves_q = (

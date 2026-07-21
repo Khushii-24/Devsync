@@ -6,12 +6,17 @@ import KanbanColumn from './KanbanColumn';
 import { useReorderTasks } from '../../hooks/useTasks';
 import { useCreateColumn } from '../../hooks/useColumns';
 
+import TaskCard from './TaskCard';
+import Avatar from '../common/Avatar';
+
 function KanbanBoard({
   projectId,
   columns,
   tasks,
   onOpenDetail,
-  dragDisabled
+  dragDisabled,
+  members,
+  viewMode = 'columns'
 }) {
   console.log("KanbanBoard projectId:", projectId);
 
@@ -124,11 +129,78 @@ function KanbanBoard({
     });
   }
 
+  if (viewMode === 'swimlanes') {
+    const safeColumns = Array.isArray(columns) ? columns : [];
+    const safeTasks = Array.isArray(tasks) ? tasks : [];
+    const safeMembers = Array.isArray(members) ? members : [];
+
+    // Group members + unassigned
+    const swimlaneRows = [
+      ...safeMembers.map((m) => ({
+        id: m?.user_id ? String(m.user_id) : null,
+        label: m?.username || m?.email || 'Unknown User',
+        member: m,
+      })).filter((r) => r.id !== null),
+      { id: null, label: 'Unassigned', member: null },
+    ];
+
+    return (
+      <div className="h-full overflow-auto p-2 space-y-4 font-sans">
+        {swimlaneRows.map((row, idx) => {
+          const userTasks = safeTasks.filter((t) => {
+            if (!t) return false;
+            if (!t.assignee_id && !row.id) return true;
+            if (t.assignee_id && row.id) return String(t.assignee_id) === String(row.id);
+            return false;
+          });
+
+          const rowKey = row.id || `unassigned-${idx}`;
+
+          return (
+            <div key={rowKey} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-3.5 space-y-3 shadow-xs">
+              <div className="flex items-center gap-2.5 pb-2 border-b border-gray-100 dark:border-gray-800">
+                <Avatar name={row.label} userId={row.id || 'unassigned'} size="sm" />
+                <h3 className="text-xs font-bold text-gray-900 dark:text-white">{row.label}</h3>
+                <span className="text-[10px] text-gray-400 font-bold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800">
+                  {userTasks.length} tasks
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                {safeColumns.map((col) => {
+                  const colTasks = userTasks.filter((t) => t && String(t.column_id) === String(col.id));
+                  return (
+                    <div key={col.id} className="bg-gray-50/70 dark:bg-gray-950/60 p-2.5 rounded-xl border border-gray-150 dark:border-gray-800/80 min-h-[110px] flex flex-col">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2 flex items-center justify-between">
+                        <span>{col.name}</span>
+                        <span className="text-[9px] text-gray-400 font-normal">({colTasks.length})</span>
+                      </div>
+                      <div className="space-y-2 flex-1">
+                        {colTasks.map((task) => (
+                          <TaskCard key={task.id} task={task} onOpenDetail={onOpenDetail} members={safeMembers} />
+                        ))}
+                        {colTasks.length === 0 && (
+                          <div className="h-16 border border-dashed border-gray-200 dark:border-gray-800/60 rounded-lg flex items-center justify-center text-[10px] text-gray-400 italic">
+                            No tasks
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
       <div className="h-full flex gap-4 overflow-x-auto p-2 items-start">
         {columns.map((column) => (
-          <KanbanColumn key={column.id} column={column} tasks={tasksByColumn(column.id)} projectId={projectId} onOpenDetail={onOpenDetail} />
+          <KanbanColumn key={column.id} column={column} tasks={tasksByColumn(column.id)} projectId={projectId} onOpenDetail={onOpenDetail} members={members} />
         ))}
 
         {/* Add Column Flow */}

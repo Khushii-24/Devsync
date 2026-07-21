@@ -12,7 +12,7 @@ const MentionList = forwardRef((props, ref) => {
 
   const selectItem = (index) => {
     const item = props.items[index];
-    if (item) props.command({ id: item.user.id, label: item.user.name });
+    if (item) props.command({ id: item.user_id, label: item.username });
   };
 
   useImperativeHandle(ref, () => ({
@@ -39,13 +39,13 @@ const MentionList = forwardRef((props, ref) => {
     <div className="bg-white shadow-lg rounded-md border border-gray-200 py-1 min-w-[160px]">
       {props.items.map((item, i) => (
         <button
-          key={item.user.id}
+          key={item.user_id}
           onClick={() => selectItem(i)}
           className={`block w-full text-left px-3 py-1.5 text-sm ${
             i === selectedIndex ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700'
           }`}
         >
-          {item.user.name}
+          {item.username}
         </button>
       ))}
     </div>

@@ -10,3 +10,4 @@ from app.models.document import Document, DocumentVersion
 from app.models.activity_log import ActivityLog
 from app.models.chunk import Chunk
 from app.models.notification import Notification
+from app.models.project_member import ProjectMember, ProjectRole

@@ -37,6 +37,8 @@ def search(
         .join(Project, Task.project_id == Project.id)
         .where(
             Project.workspace_id.in_(allowed_workspace_ids),
+            Project.deleted_at.is_(None),
+            Task.deleted_at.is_(None),
             Task.search_vector.op("@@")(func.plainto_tsquery("english", q))
         )
     )

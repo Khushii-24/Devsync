@@ -13,6 +13,9 @@ class ActivityEventType(str, enum.Enum):
     TASK_UPDATED = "task_updated"
     TASK_MOVED = "task_moved"
     TASK_DELETED = "task_deleted"
+    TASK_RESTORED = "task_restored"
+    PROJECT_ARCHIVED = "project_archived"
+    PROJECT_RESTORED = "project_restored"
     COMMENT_ADDED = "comment_added"
 
 

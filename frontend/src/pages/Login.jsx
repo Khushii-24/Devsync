@@ -119,9 +119,9 @@ export default function Login() {
             <button
               type="submit"
               disabled={isSubmitting || loginMutation.isPending}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50
-                disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg
-                text-sm transition-colors"
+              className="w-full bg-amber-500 hover:bg-amber-600 disabled:opacity-50
+                disabled:cursor-not-allowed text-gray-950 font-bold py-2.5 rounded-xl
+                text-sm transition-all shadow-md hover:shadow-amber-500/25 active:scale-95"
             >
               {loginMutation.isPending ? "Signing in..." : "Sign in"}
             </button>
@@ -130,9 +130,9 @@ export default function Login() {
         </div>
 
         {/* Footer link */}
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
           Don't have an account?{" "}
-          <Link to="/register" className="text-indigo-600 hover:text-indigo-700 font-medium">
+          <Link to="/register" className="text-amber-500 hover:text-amber-600 font-bold underline">
             Create one
           </Link>
         </p>

@@ -24,7 +24,7 @@ def require_workspace_member(workspace_id: UUID, current_user: User, db: Session
 
 
 def get_project_or_404(project_id: UUID, db: Session) -> Project:
-    project = db.query(Project).filter(Project.id == project_id).first()
+    project = db.query(Project).filter(Project.id == project_id, Project.deleted_at.is_(None)).first()
     if not project:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
     return project

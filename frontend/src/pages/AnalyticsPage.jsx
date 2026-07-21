@@ -8,6 +8,7 @@ import WorkspaceSidebar from "../components/board/WorkspaceSidebar";
 import { useProject } from "../hooks/useProjects";
 import { useWorkspaceMembers } from "../hooks/useWorkspaceMembers";
 import NotificationBell from "../components/notifications/NotificationBell";
+import Breadcrumbs from "../components/board/Breadcrumbs";
 
 export default function AnalyticsPage() {
     const { projectId } = useParams();
@@ -44,7 +45,10 @@ export default function AnalyticsPage() {
             <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6 space-y-6">
                 <div className="max-w-5xl mx-auto space-y-6">
                     <div className="flex justify-between items-center">
-                        <h1 className="text-xl font-semibold text-gray-950 dark:text-white">Analytics</h1>
+                        <div>
+                            <Breadcrumbs />
+                            <h1 className="text-xl font-semibold text-gray-950 dark:text-white mt-1.5">Analytics</h1>
+                        </div>
                         <NotificationBell projectId={projectId} />
                     </div>
 

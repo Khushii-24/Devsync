@@ -61,6 +61,10 @@ class ConnectionManager:
         channel = f"project:{project_id}"
         await self.redis_client.publish(channel, json.dumps(message, default=str))
 
+    async def publish_to_user(self, user_id: str, message: dict):
+        channel = f"user:{user_id}"
+        await self.redis_client.publish(channel, json.dumps(message, default=str))
+
     async def _deliver_locally(self, project_id: str, message: dict):
         connections = self.active_connections.get(project_id, [])
         for connection in list(connections):
@@ -69,14 +73,28 @@ class ConnectionManager:
             except Exception:
                 await self.disconnect(connection, project_id)   # now awaited
 
+    async def _deliver_to_user(self, user_id: str, message: dict):
+        for ws, (pid, uid) in list(self.socket_meta.items()):
+            if str(uid) == str(user_id):
+                try:
+                    await ws.send_text(json.dumps(message))
+                except Exception:
+                    await self.disconnect(ws, pid)
+
     async def start_listener(self):
         await self.pubsub.psubscribe("project:*")
+        await self.pubsub.psubscribe("user:*")
         async for message in self.pubsub.listen():
             if message["type"] != "pmessage":
                 continue
             channel = message["channel"]
-            project_id = channel.split(":", 1)[1]
-            payload = json.loads(message["data"])
-            await self._deliver_locally(project_id, payload)
+            if channel.startswith("project:"):
+                project_id = channel.split(":", 1)[1]
+                payload = json.loads(message["data"])
+                await self._deliver_locally(project_id, payload)
+            elif channel.startswith("user:"):
+                user_id = channel.split(":", 1)[1]
+                payload = json.loads(message["data"])
+                await self._deliver_to_user(user_id, payload)
 
 manager = ConnectionManager()

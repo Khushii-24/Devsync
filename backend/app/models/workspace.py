@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, ForeignKey, Enum, func
+from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Enum, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid, enum
@@ -29,6 +29,7 @@ class WorkspaceMember(Base):
     workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id"), primary_key=True)
     role = Column(Enum(WorkspaceRole), default=WorkspaceRole.MEMBER, nullable=False)
     joined_at = Column(DateTime(timezone=True), server_default=func.now())
+    notifications_muted = Column(Boolean, default=False, nullable=False)
 
     user = relationship("User", back_populates="workspaces")
     workspace = relationship("Workspace", back_populates="members")

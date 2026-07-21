@@ -15,9 +15,10 @@ import { ConnectionStatusBadge } from "../components/board/ConnectionStatusBadge
 import { useTaskPanelStore } from "../stores/taskPanelStore";
 
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Sidebar as SidebarIcon } from "lucide-react";
 import AIChatPanel from "../components/ai/AIChatPanel";
 import NotificationBell from "../components/notifications/NotificationBell";
+import Breadcrumbs from "../components/board/Breadcrumbs";
 
 function BoardPage() {
   const { projectId } = useParams();
@@ -55,21 +56,58 @@ function BoardPage() {
     return Array.from(set).sort();
   }, [tasks]);
 
+  const [viewMode, setViewMode] = useState('columns'); // 'columns' or 'swimlanes'
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
   if (projectLoading || columnsLoading || tasksLoading) {
     return <div className="p-6 text-gray-500">Loading board...</div>;
   }
 
   return (
-    <div className="flex h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      <WorkspaceSidebar workspaceId={project.workspace_id} activeProjectId={projectId} members={members} />
+    <div className="flex h-screen w-full overflow-hidden bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      {!isSidebarCollapsed && (
+        <WorkspaceSidebar workspaceId={project.workspace_id} activeProjectId={projectId} members={members} />
+      )}
 
-      <div className="flex-1 overflow-hidden flex flex-col bg-white dark:bg-gray-900">
-        <div className="px-6 pt-6 pb-2 flex justify-between items-center border-b border-gray-100 dark:border-gray-800">
+      <div className="flex-1 overflow-hidden flex flex-col min-w-0 bg-white dark:bg-gray-900">
+        <div className="px-4 py-3 flex justify-between items-center border-b border-gray-100 dark:border-gray-800 shrink-0">
 
-          <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-              {project.name}
-            </h1>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="p-1.5 rounded-lg border border-gray-200 dark:border-gray-750 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors"
+              title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <SidebarIcon size={16} />
+            </button>
+            <div>
+              <Breadcrumbs />
+              <div className="flex items-center gap-3 mt-1">
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">
+                  {project.name}
+                </h1>
+
+                {/* View Mode Toggle (Columns vs Assignee Swimlanes) */}
+                <div className="flex items-center p-0.5 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-semibold text-gray-600 dark:text-gray-300">
+                  <button
+                    onClick={() => setViewMode('columns')}
+                    className={`px-2.5 py-1 rounded-md transition-all ${
+                      viewMode === 'columns' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-300 shadow-2xs font-bold' : 'hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Columns
+                  </button>
+                  <button
+                    onClick={() => setViewMode('swimlanes')}
+                    className={`px-2.5 py-1 rounded-md transition-all ${
+                      viewMode === 'swimlanes' ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-300 shadow-2xs font-bold' : 'hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Assignee Swimlanes
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center gap-6">
@@ -86,6 +124,8 @@ function BoardPage() {
             columns={columns}
             tasks={filteredTasks}
             onOpenDetail={(task) => openTask(task.id, projectId, project.workspace_id)}
+            members={members}
+            viewMode={viewMode}
           />
           <AIChatPanel
             isOpen={isChatOpen}

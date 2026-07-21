@@ -12,6 +12,7 @@ class Project(Base):
     name = Column(String, nullable=False)
     description = Column(Text, nullable=True)  # Text = unlimited length, vs String which is varchar
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    deleted_at = Column(DateTime(timezone=True), nullable=True, default=None)
 
     workspace = relationship("Workspace", back_populates="projects")
     columns = relationship(

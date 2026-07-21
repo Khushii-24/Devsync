@@ -16,7 +16,7 @@ export default function TaskDetailPanelHost() {
 
   // 1. Check if the task is in the project's task list query cache
   const tasks = queryClient.getQueryData(['tasks', projectId]);
-  const cachedTask = tasks?.find((t) => t.id === openTaskId);
+  const cachedTask = tasks?.find((t) => String(t.id) === String(openTaskId));
 
   console.log('HOST tasks in cache:', tasks?.length, cachedTask);
 
@@ -39,12 +39,15 @@ export default function TaskDetailPanelHost() {
 
   if (!openTaskId || !projectId) return null;
 
+  // Render immediately if we have a task OR if we are currently loading it
+  const taskToRender = task || { id: openTaskId, title: 'Loading task...', description: '', priority: 'medium' };
+
   return (
     <TaskDetailPanel
-      task={task}
+      task={taskToRender}
       projectId={projectId}
       workspaceId={workspaceIdToUse}
-      isOpen={!!task && !isLoading}
+      isOpen={true}
       onClose={closeTask}
     />
   );

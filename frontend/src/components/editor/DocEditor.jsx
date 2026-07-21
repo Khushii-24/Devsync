@@ -17,7 +17,7 @@ function buildMentionSuggestion(workspaceId) {
     items: async ({ query }) => {
       const { data } = await axios.get(`/workspaces/${workspaceId}/members`);
       return data
-        .filter((m) => m.user.username.toLowerCase().includes(query.toLowerCase()))
+        .filter((m) => m.username.toLowerCase().includes(query.toLowerCase()))
         .slice(0, 5);
     },
     render: () => {

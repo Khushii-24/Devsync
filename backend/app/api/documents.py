@@ -102,7 +102,7 @@ async def create_document(
                 payload={
                     "document_title": document.title,
                     "document_id": str(document.id),
-                    "actor_name": user.name or user.username
+                    "actor_name": user.username
                 }
             )
         db.commit()
@@ -191,7 +191,7 @@ async def update_document(
                 payload={
                     "document_title": document.title,
                     "document_id": str(document.id),
-                    "actor_name": user.name or user.username
+                    "actor_name": user.username
                 }
             )
         db.commit()

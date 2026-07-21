@@ -1,10 +1,10 @@
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from app.models.notification import Notification, NotificationType
 
 
 async def create_notification(
-    db: AsyncSession,
+    db: Session,
     *,
     recipient_id: str,
     actor_id: str | None,
@@ -29,7 +29,7 @@ async def create_notification(
         payload=payload,
     )
     db.add(notif)
-    await db.flush()
+    db.flush()
 
     try:
         from app.core.events import build_event
@@ -50,7 +50,7 @@ async def create_notification(
         }
         
         event = build_event("notification", str(project_id), event_payload, actor_id or "")
-        await manager.publish(str(project_id), event)
+        await manager.publish_to_user(str(recipient_id), event)
     except Exception as e:
         # Avoid failing the transaction if real-time push fails
         import logging

@@ -16,6 +16,7 @@ from sqlalchemy import (
     ForeignKey,
     Enum,
     func,
+    FetchedValue,
 )
 class TaskPriority(str, enum.Enum):
     LOW = "low"
@@ -71,7 +72,8 @@ class Task(Base):
         onupdate=func.now(),
     )
 
-    search_vector = Column(TSVECTOR, nullable=True)
+    deleted_at = Column(DateTime(timezone=True), nullable=True, default=None)
+    search_vector = Column(TSVECTOR, FetchedValue(), nullable=True)
 
     project = relationship("Project", back_populates="tasks")
     column = relationship("Column", back_populates="tasks")
